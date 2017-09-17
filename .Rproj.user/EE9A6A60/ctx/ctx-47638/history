@@ -1,0 +1,512 @@
+#        print("matrices formed")
+#    Avnbd <- which(A[v,]==1)
+#    Bvnbd <- which(Bcorr[v,]==1)
+#    seedspot <- intersect(Avnbd,Bvnbd)
+#    seedinit <- sample(seedspot,1)
+#    Agraph <- graph_from_adjacency_matrix(A)
+#    Bgraph <- graph_from_adjacency_matrix(Bcorr)
+#    distAsi <- shortest.paths(Agraph,v=seedinit)
+#    distBsi <- shortest.paths(Bgraph,v=seedinit)
+#    psA <- which(distAsi <= h)
+#    psB <- which(distBsi <= h)
+#    pstot <- setdiff(intersect(psA,psB),
+#                      c(v,seedinit))
+#    lenpstot <- length(pstot)
+#    if(lenpstot < s-1){
+#        print("while loop")
+#    }
+#}
+#seeds <- c(seedinit,sample(pstot, s-1))
+#nbd <- c(seeds,v,setdiff(1:300,c(seeds,v)))
+#Anbd <- A[nbd,nbd]
+#Bnbd <- Bcorr[nbd,nbd]
+NBDS <- localnbd(v,A,h,Bcorr,s,R,g)
+#NBDS <- localnbd20160204(v,A,h,Bcorr,s,R,g)
+#        print("nbds")
+#NBDS <- localnbd20160120(v,RM$A,h,RM$Bcorr,s,R,g)
+### note the number of vertices in the core and the size of the
+### neighborhoods to match
+sizenbdA <- length(NBDS$labelsG1)
+sizenbdBcorr <- length(NBDS$labelsG2)
+propShared <- intersect(NBDS$labelsG1,NBDS$labelsG2)
+#        print("now to p2r")
+### pass to ranks to get the K-location of voi
+voiLoc <- pass2ranksuplus(NBDS$matchnbdD)
+maxvoiLoc <- max(voiLoc[s+1,])
+voiLocK <- min(voiLoc[s+1,s+1],summ)
+#max(voiLoc$mat[,s+1])+1-voiLoc$mat[s+1,s+1]
+## - vertex 1 is voi, so with s seeds it is s+1
+### use this for voiLoc(K) instead if using more than one seed
+# voiLocK <- rep(NA,v)
+# for(ks in 1:v){
+#     voiLocK[ks] <-
+#         max(voiLoc$mat[,s+ks])+1-voiLoc$mat[s+ks,s+ks]
+# }
+#
+# voiLocKmax <- max(voiLocK)
+c(voiLocK, maxvoiLoc, sizenbdA, sizenbdBcorr,length(propShared))
+}
+library(VN)
+len2 <- 2#300
+#K <- 50
+nc <- 2#16
+sumn <- sum(n)
+MK <- foreach(i=1:nc) %:%
+foreach(le=1:len2, .combine='rbind') %dopar% {
+m <- floor(((20+5*i)/100)*n)
+summ <- sum(m)
+setseed <- 12345*le
+### generate random correlated matrices and
+### perform SGM to get probability matrix
+#lenpstot <- -1
+#while(lenpstot < s-1){
+RM <- randmatcorr(B,n,m,P,corr,setseed)
+A <- RM$A
+#coreA <- c(1:m[1],101:100+m[2],201:200+m[3])
+#ncA <- setdiff(1:nrow(A),coreA)
+#Aperm <- A[c(coreA,ncA),c(coreA,ncA)]
+Bcorr <- RM$Bcorr
+#        print("matrices formed")
+#    Avnbd <- which(A[v,]==1)
+#    Bvnbd <- which(Bcorr[v,]==1)
+#    seedspot <- intersect(Avnbd,Bvnbd)
+#    seedinit <- sample(seedspot,1)
+#    Agraph <- graph_from_adjacency_matrix(A)
+#    Bgraph <- graph_from_adjacency_matrix(Bcorr)
+#    distAsi <- shortest.paths(Agraph,v=seedinit)
+#    distBsi <- shortest.paths(Bgraph,v=seedinit)
+#    psA <- which(distAsi <= h)
+#    psB <- which(distBsi <= h)
+#    pstot <- setdiff(intersect(psA,psB),
+#                      c(v,seedinit))
+#    lenpstot <- length(pstot)
+#    if(lenpstot < s-1){
+#        print("while loop")
+#    }
+#}
+#seeds <- c(seedinit,sample(pstot, s-1))
+#nbd <- c(seeds,v,setdiff(1:300,c(seeds,v)))
+#Anbd <- A[nbd,nbd]
+#Bnbd <- Bcorr[nbd,nbd]
+NBDS <- localnbd(v,A,h,Bcorr,s,R,g)
+#NBDS <- localnbd20160204(v,A,h,Bcorr,s,R,g)
+#        print("nbds")
+#NBDS <- localnbd20160120(v,RM$A,h,RM$Bcorr,s,R,g)
+### note the number of vertices in the core and the size of the
+### neighborhoods to match
+sizenbdA <- length(NBDS$labelsG1)
+sizenbdBcorr <- length(NBDS$labelsG2)
+propShared <- intersect(NBDS$labelsG1,NBDS$labelsG2)
+#        print("now to p2r")
+### pass to ranks to get the K-location of voi
+voiLoc <- pass2ranksuplus(NBDS$matchnbdD)
+maxvoiLoc <- max(voiLoc[s+1,])
+voiLocK <- min(voiLoc[s+1,s+1],summ)
+#max(voiLoc$mat[,s+1])+1-voiLoc$mat[s+1,s+1]
+## - vertex 1 is voi, so with s seeds it is s+1
+### use this for voiLoc(K) instead if using more than one seed
+# voiLocK <- rep(NA,v)
+# for(ks in 1:v){
+#     voiLocK[ks] <-
+#         max(voiLoc$mat[,s+ks])+1-voiLoc$mat[s+ks,s+ks]
+# }
+#
+# voiLocKmax <- max(voiLocK)
+c(voiLocK, maxvoiLoc, sizenbdA, sizenbdBcorr,length(propShared))
+}
+n = c(20,20,20)
+np<-c(0,n)
+P <- matrix(0,sum(n),sum(n))
+for(ip in 1:length(n)){
+for(j in 1:length(n)){
+P[(sum(np[1:ip])+1):sum(np[1:ip+1]),
+(sum(np[1:j])+1):sum(np[1:j+1])] <-
+B[ip,j]*matrix(1,np[ip+1],np[j+1])
+}
+corr <- 0.6
+s <- 4 # number of seeds for seeded graph matching
+v <- 1 # voi
+h <- 2 # max walk from voi
+g <- 0.1 # gamma <- max tolerance for alpha
+s <- 4 # number of seeds for seeded graph matching
+v <- 1 # voi
+h <- 2 # max walk from voi
+g <- 0.1 # gamma <- max tolerance for alpha
+R <- 50 # ??
+iter <- 2 #20 # ??
+len2 <- 2#300
+#K <- 50
+nc <- 2#16
+sumn <- sum(n)
+cl <- makeCluster(min(detectCores(),nc))
+registerDoParallel(cl)
+MK <- foreach(i=1:nc) %:%
+foreach(le=1:len2, .combine='rbind') %dopar% {
+m <- floor(((20+5*i)/100)*n)
+summ <- sum(m)
+setseed <- 12345*le
+### generate random correlated matrices and
+### perform SGM to get probability matrix
+#lenpstot <- -1
+#while(lenpstot < s-1){
+RM <- randmatcorr(B,n,m,P,corr,setseed)
+A <- RM$A
+#coreA <- c(1:m[1],101:100+m[2],201:200+m[3])
+#ncA <- setdiff(1:nrow(A),coreA)
+#Aperm <- A[c(coreA,ncA),c(coreA,ncA)]
+Bcorr <- RM$Bcorr
+#        print("matrices formed")
+#    Avnbd <- which(A[v,]==1)
+#    Bvnbd <- which(Bcorr[v,]==1)
+#    seedspot <- intersect(Avnbd,Bvnbd)
+#    seedinit <- sample(seedspot,1)
+#    Agraph <- graph_from_adjacency_matrix(A)
+#    Bgraph <- graph_from_adjacency_matrix(Bcorr)
+#    distAsi <- shortest.paths(Agraph,v=seedinit)
+#    distBsi <- shortest.paths(Bgraph,v=seedinit)
+#    psA <- which(distAsi <= h)
+#    psB <- which(distBsi <= h)
+#    pstot <- setdiff(intersect(psA,psB),
+#                      c(v,seedinit))
+#    lenpstot <- length(pstot)
+#    if(lenpstot < s-1){
+#        print("while loop")
+#    }
+#}
+#seeds <- c(seedinit,sample(pstot, s-1))
+#nbd <- c(seeds,v,setdiff(1:300,c(seeds,v)))
+#Anbd <- A[nbd,nbd]
+#Bnbd <- Bcorr[nbd,nbd]
+NBDS <- localnbd(v,A,h,Bcorr,s,R,g)
+#NBDS <- localnbd20160204(v,A,h,Bcorr,s,R,g)
+#        print("nbds")
+#NBDS <- localnbd20160120(v,RM$A,h,RM$Bcorr,s,R,g)
+### note the number of vertices in the core and the size of the
+### neighborhoods to match
+sizenbdA <- length(NBDS$labelsG1)
+sizenbdBcorr <- length(NBDS$labelsG2)
+propShared <- intersect(NBDS$labelsG1,NBDS$labelsG2)
+#        print("now to p2r")
+### pass to ranks to get the K-location of voi
+voiLoc <- pass2ranksuplus(NBDS$matchnbdD)
+maxvoiLoc <- max(voiLoc[s+1,])
+voiLocK <- min(voiLoc[s+1,s+1],summ)
+#max(voiLoc$mat[,s+1])+1-voiLoc$mat[s+1,s+1]
+## - vertex 1 is voi, so with s seeds it is s+1
+### use this for voiLoc(K) instead if using more than one seed
+# voiLocK <- rep(NA,v)
+# for(ks in 1:v){
+#     voiLocK[ks] <-
+#         max(voiLoc$mat[,s+ks])+1-voiLoc$mat[s+ks,s+ks]
+# }
+#
+# voiLocKmax <- max(voiLocK)
+c(voiLocK, maxvoiLoc, sizenbdA, sizenbdBcorr,length(propShared))
+}
+library(VN)
+cl <- makeCluster(min(detectCores(),nc))
+registerDoParallel(cl)
+MK <- foreach(i=1:nc) %:%
+foreach(le=1:len2, .combine='rbind') %dopar% {
+m <- floor(((20+5*i)/100)*n)
+summ <- sum(m)
+setseed <- 12345*le
+### generate random correlated matrices and
+### perform SGM to get probability matrix
+#lenpstot <- -1
+#while(lenpstot < s-1){
+RM <- randmatcorr(B,n,m,P,corr,setseed)
+A <- RM$A
+#coreA <- c(1:m[1],101:100+m[2],201:200+m[3])
+#ncA <- setdiff(1:nrow(A),coreA)
+#Aperm <- A[c(coreA,ncA),c(coreA,ncA)]
+Bcorr <- RM$Bcorr
+#        print("matrices formed")
+#    Avnbd <- which(A[v,]==1)
+#    Bvnbd <- which(Bcorr[v,]==1)
+#    seedspot <- intersect(Avnbd,Bvnbd)
+#    seedinit <- sample(seedspot,1)
+#    Agraph <- graph_from_adjacency_matrix(A)
+#    Bgraph <- graph_from_adjacency_matrix(Bcorr)
+#    distAsi <- shortest.paths(Agraph,v=seedinit)
+#    distBsi <- shortest.paths(Bgraph,v=seedinit)
+#    psA <- which(distAsi <= h)
+#    psB <- which(distBsi <= h)
+#    pstot <- setdiff(intersect(psA,psB),
+#                      c(v,seedinit))
+#    lenpstot <- length(pstot)
+#    if(lenpstot < s-1){
+#        print("while loop")
+#    }
+#}
+#seeds <- c(seedinit,sample(pstot, s-1))
+#nbd <- c(seeds,v,setdiff(1:300,c(seeds,v)))
+#Anbd <- A[nbd,nbd]
+#Bnbd <- Bcorr[nbd,nbd]
+NBDS <- localnbd(v,A,h,Bcorr,s,R,g)
+#NBDS <- localnbd20160204(v,A,h,Bcorr,s,R,g)
+#        print("nbds")
+#NBDS <- localnbd20160120(v,RM$A,h,RM$Bcorr,s,R,g)
+### note the number of vertices in the core and the size of the
+### neighborhoods to match
+sizenbdA <- length(NBDS$labelsG1)
+sizenbdBcorr <- length(NBDS$labelsG2)
+propShared <- intersect(NBDS$labelsG1,NBDS$labelsG2)
+#        print("now to p2r")
+### pass to ranks to get the K-location of voi
+voiLoc <- pass2ranksuplus(NBDS$matchnbdD)
+maxvoiLoc <- max(voiLoc[s+1,])
+voiLocK <- min(voiLoc[s+1,s+1],summ)
+#max(voiLoc$mat[,s+1])+1-voiLoc$mat[s+1,s+1]
+## - vertex 1 is voi, so with s seeds it is s+1
+### use this for voiLoc(K) instead if using more than one seed
+# voiLocK <- rep(NA,v)
+# for(ks in 1:v){
+#     voiLocK[ks] <-
+#         max(voiLoc$mat[,s+ks])+1-voiLoc$mat[s+ks,s+ks]
+# }
+#
+# voiLocKmax <- max(voiLocK)
+c(voiLocK, maxvoiLoc, sizenbdA, sizenbdBcorr,length(propShared))
+}
+MK <- foreach(i=1:nc) %:%
+foreach(le=1:len2, .combine='rbind') %dopar% {
+require(VN)
+m <- floor(((20+5*i)/100)*n)
+summ <- sum(m)
+setseed <- 12345*le
+### generate random correlated matrices and
+### perform SGM to get probability matrix
+#lenpstot <- -1
+#while(lenpstot < s-1){
+RM <- randmatcorr(B,n,m,P,corr,setseed)
+A <- RM$A
+#coreA <- c(1:m[1],101:100+m[2],201:200+m[3])
+#ncA <- setdiff(1:nrow(A),coreA)
+#Aperm <- A[c(coreA,ncA),c(coreA,ncA)]
+Bcorr <- RM$Bcorr
+#        print("matrices formed")
+#    Avnbd <- which(A[v,]==1)
+#    Bvnbd <- which(Bcorr[v,]==1)
+#    seedspot <- intersect(Avnbd,Bvnbd)
+#    seedinit <- sample(seedspot,1)
+#    Agraph <- graph_from_adjacency_matrix(A)
+#    Bgraph <- graph_from_adjacency_matrix(Bcorr)
+#    distAsi <- shortest.paths(Agraph,v=seedinit)
+#    distBsi <- shortest.paths(Bgraph,v=seedinit)
+#    psA <- which(distAsi <= h)
+#    psB <- which(distBsi <= h)
+#    pstot <- setdiff(intersect(psA,psB),
+#                      c(v,seedinit))
+#    lenpstot <- length(pstot)
+#    if(lenpstot < s-1){
+#        print("while loop")
+#    }
+#}
+#seeds <- c(seedinit,sample(pstot, s-1))
+#nbd <- c(seeds,v,setdiff(1:300,c(seeds,v)))
+#Anbd <- A[nbd,nbd]
+#Bnbd <- Bcorr[nbd,nbd]
+NBDS <- localnbd(v,A,h,Bcorr,s,R,g)
+#NBDS <- localnbd20160204(v,A,h,Bcorr,s,R,g)
+#        print("nbds")
+#NBDS <- localnbd20160120(v,RM$A,h,RM$Bcorr,s,R,g)
+### note the number of vertices in the core and the size of the
+### neighborhoods to match
+sizenbdA <- length(NBDS$labelsG1)
+sizenbdBcorr <- length(NBDS$labelsG2)
+propShared <- intersect(NBDS$labelsG1,NBDS$labelsG2)
+#        print("now to p2r")
+### pass to ranks to get the K-location of voi
+voiLoc <- pass2ranksuplus(NBDS$matchnbdD)
+maxvoiLoc <- max(voiLoc[s+1,])
+voiLocK <- min(voiLoc[s+1,s+1],summ)
+#max(voiLoc$mat[,s+1])+1-voiLoc$mat[s+1,s+1]
+## - vertex 1 is voi, so with s seeds it is s+1
+### use this for voiLoc(K) instead if using more than one seed
+# voiLocK <- rep(NA,v)
+# for(ks in 1:v){
+#     voiLocK[ks] <-
+#         max(voiLoc$mat[,s+ks])+1-voiLoc$mat[s+ks,s+ks]
+# }
+#
+# voiLocKmax <- max(voiLocK)
+c(voiLocK, maxvoiLoc, sizenbdA, sizenbdBcorr,length(propShared))
+}
+MKbar <- as.numeric(lapply(MK,function(x){mean(x[,1])}))
+MKdiffbar <- as.numeric(lapply(MK,function(x){mean(x[,2]-x[,1])}))
+MKsd <- as.numeric(lapply(MK,function(x){sd(x[,1])/sqrt(len2)}))
+MKdiffsd <- as.numeric(lapply(MK,function(x){sd(x[,2]-x[,1])/sqrt(len2)}))
+MKci <- cbind(c(MKbar-2*MKsd),c(MKbar+2*MKsd)) # for 95% CI, use 1.96 instead of 2
+MKdiffci <- cbind(c(MKdiffbar-2*MKdiffsd),c(MKdiffbar+2*MKdiffsd))
+K <- seq(25,100,by=5)
+df <- data.frame(K,MKbar, MKci)
+p01 <- ggplot(data=df, aes(x=K, y = MKbar)) +
+geom_line()  +
+geom_point() +
+geom_errorbar(aes(ymin=X1, ymax=X2),colour="salmon") +
+ylab("Avg. Location of VOI in Top K ordering") +
+xlab("Difference Ratio between the sizes of the two graphs") +
+labs(title= "How Ratio of Graphs to Match affects Top K
+with 4 seeds, 1 VOI")
+dfdiff <- data.frame(K,MKdiffbar, MKdiffci)
+p02 <- ggplot(data=dfdiff, aes(x=K, y = MKdiffbar)) +
+geom_line()  +
+geom_point() +
+geom_errorbar(aes(ymin=X1, ymax=X2),colour="salmon") +
+ylab("Avg. Difference") +
+xlab("Difference Ratio between the sizes of the two graphs") +
+labs(title= "How Difference Ratio of Graphs affects Top K
+using MaxK - TrueK,
+with 4 seeds, 1 VOI")
+p01
+p02
+p04 <- ggplot(data=df, aes(x=K, y = MKbar)) +
+geom_line(size=1)  +
+geom_point() +
+geom_errorbar(aes(ymin=X1, ymax=X2,aes=.7)) +
+theme(text=element_text(size=15)) +
+ylab("rank(v*)") +
+xlab("r") +
+labs(title= "Affects of Various Ratios")
+p04
+library(VN)
+n = c(100,100,100)
+np<-c(0,n)
+P <- matrix(0,sum(n),sum(n))
+for(ip in 1:length(n)){
+for(j in 1:length(n)){
+P[(sum(np[1:ip])+1):sum(np[1:ip+1]),
+(sum(np[1:j])+1):sum(np[1:j+1])] <-
+B[ip,j]*matrix(1,np[ip+1],np[j+1])
+}
+corr <- 0.6
+s <- 4 # number of seeds for SGM, assuming that they are the first s vertices!
+v <- 1 # voi in G1, to be found in G2
+h <- 2 # max walk from voi -- all vertices in nbd should be within path of length h from at least one seed
+g <- 0.1 # gamma <- max tolerance for alpha, how far away from the barycenter user is willing to go for the initialization of SGM on any given iteration
+R <- 50 # number of times to run sgm
+#iter <- 2 #20 # ??
+len2 <- 300
+#K <- 50
+nc <- 16
+require(VN)
+B = matrix(c(0.7,0.3,0.4,0.3,0.7,0.3,0.4,0.3,0.7),3,byrow=TRUE)
+#B1 <- matrix(c(0.7,0.1,0.2,0.1,0.7,0.1,0.2,0.1,0.7),3,byrow=TRUE)
+n = c(100,100,100)
+np<-c(0,n)
+P <- matrix(0,sum(n),sum(n))
+for(ip in 1:length(n)){
+for(j in 1:length(n)){
+P[(sum(np[1:ip])+1):sum(np[1:ip+1]),
+(sum(np[1:j])+1):sum(np[1:j+1])] <-
+B[ip,j]*matrix(1,np[ip+1],np[j+1])
+}
+corr <- 0.6
+s <- 4 # number of seeds for SGM, assuming that they are the first s vertices!
+v <- 1 # voi in G1, to be found in G2
+h <- 2 # max walk from voi -- all vertices in nbd should be within path of length h from at least one seed
+g <- 0.1 # gamma <- max tolerance for alpha, how far away from the barycenter user is willing to go for the initialization of SGM on any given iteration
+R <- 50 # number of times to run sgm
+#iter <- 2 #20 # ??
+len2 <- 300
+#K <- 50
+nc <- 16
+require(VN)
+i
+i=1
+le=1
+m <- floor(((20+5*i)/100)*n)
+summ <- sum(m)
+setseed <- 12345*le
+RM <- randmatcorr(B,n,m,P,corr,setseed)
+A <- RM$A
+Bcorr <- RM$Bcorr
+R
+g
+h
+v
+NBDS <- localnbd(v,A,h,Bcorr,s,R,g)
+dim(A)
+n
+m
+str(cl)
+image(A)
+require(Matrix)
+image(Matrix(A))
+require(Matrix)
+image(Matrix(Bcorr))
+sizenbdA <- length(NBDS$labelsG1)
+sizenbdBcorr <- length(NBDS$labelsG2)
+propShared <- intersect(NBDS$labelsG1,NBDS$labelsG2)
+voiLoc <- pass2ranksuplus(NBDS$matchnbdD)
+maxvoiLoc <- max(voiLoc[s+1,])
+voiLocK <- min(voiLoc[s+1,s+1],summ)
+str(NBDS)
+image(Matrix(NBDS$matchnbdD))
+range(NBDS$matchnbdD)
+library(VN)
+?while
+}
+?localnbd
+library(VN)
+localnbd
+?localnbd
+library(VN)
+load("~/Dropbox/SGM/nbdmaking/MC-HS-s9.Rbin")
+str(MC)
+table(sapply(MC,"[",1))
+require(ggplot2)
+require(lattice)
+require(reshape)
+load("HSundircoreSeed537all_20160324_fixnbdcand.RData")
+setwd("~/Dropbox/SGM/nbdmaking/Examples/HSdataset")
+load("HSundircoreSeed537all_20160324_fixnbdcand.RData")
+totalna <- 0
+whichna <- c()
+totalnoseeds <- 0
+whichns <- c()
+plt <- 27
+#x <- SET[[plt]]$x
+spseed <- max(SET[[plt]]$simperseed)
+spseedall <- SET[[plt]]$simperseed
+k_i <- SET[[plt]]$topk    # this is the rank(u*) in nom. list
+c_i <- SET[[plt]]$possiblematches[,1:spseed] # |N_2(s')|
+rationorm <- (k_i - 1)/(c_i - 1)
+d1 <- t(rationorm)
+colnames(d1) <- paste0("s", 1:dim(d1)[2])
+head(d1)
+d2 <- melt(d1)[,-1]
+head(d2)
+load("~/Dropbox/SGM/nbdmaking/SET_20160620-localnbd.RData")
+source("~/Dropbox/SGM/nbdmaking/Examples/HSdataset/voi27normalizedLATTICE_20160420.r")
+str(MC)
+str(MC[[1]])
+str(MC[[2]])
+str(MC[[3]])
+table(sapply(MC,"[",1))
+table(as.numeric(sapply(MC,"[",2)))
+length(MC)
+ncandidate <- as.numeric(sapply(MC,"[",3))
+df <- data.frame(ncand=ncandidate)
+ggplot(df,aes(x=ncand)) + #scale_fill_brewer(palette="Set1") +
+geom_histogram(binwidth=1,position="identity",alpha=1)
+load("~/Dropbox/SGM/nbdmaking/MC-rho0.1.Rbin"); MC1 <- MC
+str(MC1)
+length(MC1)
+str(MC1[[1]])
+MC1[[1]]
+load("~/Dropbox/SGM/nbdmaking/MC-rho0.1.Rbin"); MC1 <- MC
+load("~/Dropbox/SGM/nbdmaking/MC-rho0.9.Rbin"); MC9 <- MC
+cat("corr=0.1\n"); table(sapply(MC1,"[",1))
+cat("corr=0.9\n"); table(sapply(MC9,"[",1))
+cat("corr=0.1\n"); table(as.numeric(sapply(MC1,"[",2)))
+cat("corr=0.9\n"); table(as.numeric(sapply(MC9,"[",2)))
+load("~/Dropbox/SGM/nbdmaking/SET_20160620-localnbd.RData")
+table(sapply(MC,"[",1))
+table(as.numeric(sapply(MC,"[",2)))
+ncandidate <- as.numeric(sapply(MC,"[",3))
+df <- data.frame(ncand=ncandidate)
+ggplot(df,aes(x=ncand)) + #scale_fill_brewer(palette="Set1") +
+theme(legend.title=element_blank()) +
+geom_histogram(binwidth=1,position="identity",alpha=1)

@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1497361875665.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "A66F7011",
+    "lastKnownWriteTime" : 1505313166,
+    "last_content_update" : 1505313166974,
+    "path" : "~/Dropbox/SGM/VN/R/localnbd.r",
+    "project_path" : "R/localnbd.r",
+    "properties" : {
+        "cursorPosition" : "13,0",
+        "docOutlineVisible" : "0",
+        "scrollLine" : "0"
+    },
+    "relative_order" : 5,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

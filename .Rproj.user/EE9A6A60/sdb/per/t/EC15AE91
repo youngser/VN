@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "#'\n#' Runs SGM algorithm starting with rsp (rand start point)\n#' \\code{R} times and generates an average probability matrix over the \\code{R}\n#' restarts\n#'\n#' @param A adjacency matrix for \\eqn{G_1}\n#' @param B adjacency for correlated matrix \\eqn{G_2}\n#' @param R number of restarts\n#' @param s number of seeds\n#' @param g gamma (upper bound on alpha) should be in (0,1), max tolerance for alpha, how far away from the barycenter user is willing to go for\n#' the initialization of \\code{sgm} on any given iteration\n#' @param pad a scalar value for padding for sgm\n#' @param iter number of iterations allowed to be used in sgm step\n#'\n#' @return \\eqn{n \\times n} average probability matrix over all restarts.\n#'\n#' @author Heather Gaddy Patsolic <hgaddy1@jhu.edu>\n#' @export\n### S.D.G\n#\n\n\n#sgm3 <- function(A,B,m,start,iteration){\n\nmultiStart <- function(A,B,R,s,g,pad=0,iter=20){\n#     source(\"~Hspace/sgmvn/ForTopK/Functions/sgm3.R\")\n    n <- max(nrow(A),nrow(B))\n    P <- matrix(0,n,n)\n\n    for(i in 1:R){\n        M <- rsp(n-s,g)\n#        if (n-s==1) {\n#            Ps <- sgm.igraph(A,B,s,start=M,iteration=iter)\n#        } else {\n            Ps <- sgm(A,B,s,start=M,pad=pad,iteration=iter)\n#        }\n        P <- P + Ps$P\n    } ## END FOR\n\n    D <- (1/R)*P\n\n    return(D)\n} ## END FUNCTION\n\n\n\n#   Time:\n##  Working status:\n### Comments:\n####Soli Deo Gloria\n",
+    "created" : 1502808134212.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3979593963",
+    "id" : "EC15AE91",
+    "lastKnownWriteTime" : 1492903692,
+    "last_content_update" : 1492903692,
+    "path" : "~/Dropbox/SGM/VN/R/multiStart.r",
+    "project_path" : "R/multiStart.r",
+    "properties" : {
+    },
+    "relative_order" : 6,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

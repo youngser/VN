@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "Package: VN\nType: Package\nTitle: Vertex Nomination via Seeded Graph Matching\nVersion: 0.3.0\nDepends:\n    R (>= 3.0)\nImports:\n    igraph,\n    clue,\n    Matrix,\n    lattice\nAuthor: Heather G. Patsolic, Vince Lyzinski, Youngser Park, Carey P. Priebe\nMaintainer: Youngser Park <youngser@jhu.edu>\nDescription: Routine to find a nomination list of vertices in one network that\n    are likely to correspond to the vertex of interest (VOI) in the other network\n    using seeded graph matching on local neighbothoods near the VOI.\nLicense: GPL (>= 2)\nURL: http://www.cis.jhu.edu/~parky/D3M/vn.html\nLazyData: TRUE\nRoxygenNote: 5.0.1\n",
+    "created" : 1502803141997.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2952682190",
+    "id" : "75464848",
+    "lastKnownWriteTime" : 1492903692,
+    "last_content_update" : 1492903692,
+    "path" : "~/Dropbox/SGM/VN/DESCRIPTION",
+    "project_path" : "DESCRIPTION",
+    "properties" : {
+    },
+    "relative_order" : 9,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "dcf"
+}

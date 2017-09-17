@@ -1,0 +1,6 @@
+"0","mydf4 <- subset(mydf3, select=c(""out.1"",""out.2"",""neuron"",""cluster""))"
+"0","mydf4$age <- KC.age"
+"0","p <- ggplot(mydf4, aes_string(x=""out.1"",y=""out.2"")) + "
+"0","    geom_point(aes(color=cluster,shape=age)) +"
+"0","      scale_shape_manual(values=1:nlevels(mydf3$cluster))"
+"0","print(p)"

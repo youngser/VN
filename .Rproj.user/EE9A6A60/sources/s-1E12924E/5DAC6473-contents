@@ -1,0 +1,661 @@
+---
+title: "Vertex Nomination via Seeded Graph Matching"
+author: "Carey E. Priebe, Youngser Park, Heather Patsolic, Vince Lyzinski <br> Johns Hopkins University"
+date: '`r Sys.Date()`'
+output:
+  html_document:
+    code_folding: show
+    css: ~/RFolder/pandoc.css
+    fig.path: ~/Dropbox/SGM/nbdmaking/figure/
+    fig_caption: yes
+    fig_height: 6
+    fig_width: 6
+    highlight: pygments
+    keep_md: yes
+    number_sections: yes
+    theme: cerulean
+    toc: yes
+    toc_depth: 3
+    toc_float: no
+  pdf_document:
+    fig_caption: yes
+    keep_tex: yes
+    number_sections: yes
+bibliography: vnsgm.bib
+---
+
+<style type="text/css">
+.table {
+    width: 40%;
+}
+</style>
+
+```{r setup,include=FALSE,results='asis'}
+#<link rel="stylesheet" href="http://vis.supstat.com/assets/themes/dinky/css/scianimator.css">
+#<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+#<script src="http://vis.supstat.com/assets/themes/dinky/js/jquery.scianimator.min.js"></script>
+
+suppressMessages(require(igraph))
+suppressMessages(require(VN))
+suppressMessages(require(Matrix))
+suppressMessages(require(lattice))
+suppressMessages(require(popbio))
+suppressMessages(require(ggplot2))
+suppressMessages(require(reshape2))
+suppressMessages(require(knitr))
+suppressMessages(require(printr))
+suppressMessages(require(dplyr))
+
+options(digits = 2)
+
+source("~/Dropbox/SGM/nbdmaking/vn.R")
+
+#knitr::opts_chunk$set(cache=TRUE, autodep=TRUE)
+#dep_auto() # figure out dependencies automatically
+opts_chunk$set(cache=FALSE,echo=TRUE,eval=TRUE,warning=FALSE,message=FALSE,comment="#",
+               dpi=100,dev=c('png','pdf'))
+
+opts_knit$set(aliases=c(h='fig.height', w='fig.width', cap='fig.cap', scap='fig.scap'))     
+
+opts_knit$set(eval.after = c('fig.cap','fig.scap'))                                                                            
+knit_hooks$set(document = function(x) {                                                                gsub('(\\\\end\\{knitrout\\}[\n]+)', '\\1\\\\noindent ', x)                                  })
+opts_knit$set(animation.fun = hook_scianimator)
+
+#knit_hooks$set(plot = function(x, options) {
+#       paste('<figure><img src="',
+#             opts_knit$get('base.url'), paste(x, collapse = '.'),
+#             '"><figcaption>', options$fig.cap, '</figcaption></figure>',
+#             sep = '')
+# })
+
+ fn = local({
+   i = 0
+   function(x) {
+     i <<- i + 1
+#     paste('Figure ', i, ': ', x, sep = '')
+     paste('', '', x, sep = '')
+   }
+ })
+
+rmd.convert <- function(fname, output=c('latex', 'word', 'html', "pdf")){
+  ## Thanks to Robert Musk for helpful additions to make this run better on Windows
+
+  require(knitr)
+  require(tools)
+  
+  thedir <- file_path_as_absolute(dirname(fname))
+  thefile <- (basename(fname)) 
+  
+  create_latex <- function(f){
+    knit(f, 'tmp-outputfile.md'); 
+    newname <- paste0(file_path_sans_ext(f), ".tex")
+    mess <- paste('pandoc -f markdown -t latex -s -o', shQuote(newname), 
+                  "tmp-outputfile.md")
+    system(mess)
+    cat("The Latex file is", file.path(thedir, newname), 
+        "\nIf transporting do not forget to include the folder", file.path(thedir, "figure"), "\n")
+    mess <- paste('rm tmp-outputfile.md')
+    system(mess)
+  }
+
+  create_word <- function(f){
+    knit(f, 'tmp-outputfile.md');
+    newname <- paste0(file_path_sans_ext(f),".docx")
+    mess <- paste('pandoc -f markdown -t docx -o', shQuote(newname), "tmp-outputfile.md")
+    system(mess)
+    cat("The Word (docx) file is", file.path(thedir, newname), "\n")
+    mess <- paste('rm tmp-outputfile.md')
+    system(mess)
+  }
+  
+  create_html <- function(f){
+    knit2html(f)
+    cat("The main HTML file is", file.path(thedir, paste0(file_path_sans_ext(f), ".html")), 
+        "\nIf transporting do not forget to include the folder", file.path(thedir, "figure"), "\n")
+  }
+
+  create_pdf <- function(f){
+    knit(f, 'tmp-outputfile.md');
+    newname <- paste0(file_path_sans_ext(f),".pdf")
+    mess <- paste('pandoc -f markdown -o', shQuote(newname), "tmp-outputfile.md")
+    system(mess)
+    cat("The PDF file is", file.path(thedir, newname), "\n")
+    mess <- paste('rm tmp-outputfile.md')
+    system(mess)
+  }
+
+  origdir <- getwd()  
+  tryCatch({
+    setwd(thedir) ## put us next to the original Rmarkdown file
+    out <- match.arg(output)
+    switch(out,
+      latex=create_latex(thefile),
+      html=create_html(thefile),
+      pdf=create_pdf(thefile),
+      word=create_word(thefile)
+    )}, finally=setwd(origdir))
+  
+}
+
+##################
+rmarkdownTable <- function(df) {
+    cat(paste(names(df), collapse = "|"))
+    cat("\n")
+    cat(paste(rep("-", ncol(df)), collapse = "|"))
+    cat("\n")
+
+    for(i in 1:nrow(df)){
+        cat(paste(df[i,], collapse = "|"))
+        cat("\n")
+    }
+    invisible(NULL)
+}
+
+
+#require(xtable)
+#tab <- xtable(head(iris),digits=2)
+#print(tab, type="html")
+
+#(http://www.cis.jhu.edu/~parky/D3M/27SGM_for_VN_20160518.pdf) 
+#* A short summary of the methodology is  #[here](http://www.cis.jhu.edu/~parky/D3M/vnsgm_summary.pdf).
+#* The poster for [SIAMNS16](http://www.siam.org/meetings/ns16/) is [here](http://www.cis.jhu.edu/~parky/D3M/SIAM-NS16-VNSGM.pdf).
+
+#* The latest drafts of our papers are [here](http://www.cis.jhu.edu/~parky/D3M/SGM1.pdf) and
+#[here](http://www.cis.jhu.edu/~parky/D3M/vnsgm_hgp.pdf).
+#* The latest drafts of our papers are [@sgm1] and [@vnsgm].
+
+```
+# Background
+
+* The latest drafts of our papers are:
+
+>    * Donniell E. Fishkind, Sancar Adali, Heather G. Patsolic, Lingyao Meng, Vince Lyzinski, C.E. Priebe, "[Seeded Graph Matching](https://arxiv.org/abs/1209.0367)," submitted, 2017. ([codes and plots](http://www.cis.jhu.edu/~parky/D3M/SGM/))
+>    * Heather G. Patsolic, Youngser Park, Vince Lyzinski, C.E. Priebe, "[Vertex Nomination Via Local Neighborhood Matching](https://arxiv.org/abs/1705.00674)," submitted, 2017. ([codes and plots](http://www.cis.jhu.edu/~parky/D3M/VNSGM/))
+
+* The slide sets are [here (long)](http://www.cis.jhu.edu/~parky/D3M/jhusna1705_fullHandout.pdf) and [here (short)](http://www.cis.jhu.edu/~parky/D3M/jhusna1705_shortHandout.pdf).
+
+<figure>
+<img src="vnsgm.jpg" width="700px" />
+</figure>
+
+Here we describe our approach to both the simulations and the illustrative experiments, which allows the same code to be used to address a real problem in anger (when we don’t know any truth except the VOI $x$ and some seeds $S \leftrightarrow S'$).  
+If it’s a simulation or illustrative experiment: (1) generate $G$ and $G'$ with some shared vertices and some unshared vertices, or start with real data $G$ and $G'$ with a collection of known shared vertices and some unknown or unshared vertices, and (2) randomly pick VOI $x$ and some number of seeds $S\leftrightarrow S'$ from amongst the shared vertices; then embark on our procedure described below. If it’s a real problem, with given VOI $x$ and some seeds $S \leftrightarrow S'$, then embark immediately on our procedure described below.
+
+# Toy Example
+
+> **input**: $G$, $G'$, seedset $S\leftrightarrow S'$ (pairs of vertices one in $G$ & one in $G'$), $x$ (vertex of interest in $G$), $h \leq \ell$.  
+> **output**: list of (`candidate`,`probability`) where   
+    - `candidates` are non-seed vertices in $G'$ and    
+    - `probability` is for nomination as match for $x$.  
+
+
+This toy example follows these steps:
+
+1. build a pair of $\rho$-correlated RDPG random graphs, $G(V,E)$ & $G'(V',E')$, where $|V|=|V'|=30$
+2. remove the last $5$ vertices from $G'$ to make $|V(G)| \geq |V(G')|$
+3. randomly pick VOI $x$ and $s$ seeds from amongst the shared vertices
+4. find $S_x$, all seeds in $N_h(x)$ in $G$, and matching $S'_x$ in $G'$, let $s_x = |S_x| = |S'_x|$, if $s_x=0$, then "`impossible1`"
+5. let $C'_x = N_\ell(S'_x)$ be the _candidates_ for the match $x'$ to the VOI $x$ for $\ell\geq h$, if $x' \notin C'_x$, then "`impossible2`"
+6. find $G_x = \Omega(N_\ell[S_x])$ and $G'_x = \Omega(N_\ell[S'_x])$ 
+7. do `SGM`$(G_x, G'_x, S_x \leftrightarrow S'_x)$ which returns $P=|V_x| \times |V'_x|$ matching probability matrix
+8. find $\hat{x}' = \arg\max_{v \in {C'_x}} P[x,v]$
+
+So now we do `SGM`$(G_x,G'_x,S_x \leftrightarrow S'_x)$ -- a smaller SGM problem. (NB: original is this with $h=\infty$.)  
+
+NB: Steps 4-8 are the same for simulation, illustrative experiment, and real application.  
+
+
+```{r toy1}
+suppressMessages(require(VN))
+suppressMessages(require(igraph))
+
+sim <- TRUE # if TRUE, run simulation, otherwise do the HS experiment
+HS <- "full" # or "core"
+
+# parameters for finding seeds
+s <- ifelse(sim,4,12) # number of seeds to be used for SGM
+h <- ell <- 1 # max walk for finding neighborhoods
+
+# parameters for SGM
+R <- 100     # repeat SGM R times to get averaged P matrix
+gamma <- 0.1 # number of iterations for the Frank-Wolfe algorithm
+
+mc <- 2
+set.seed(1234+mc)
+
+if (sim) {
+    # generate a pair of correlated graphs
+    m <- 5  # |J| = junk on G1
+    n <- 20 # |W| = shared vertices on G1, not including x and S
+    mp <- 0 # |J'| = junk on G2 
+    d <- 5  # for RDPG, dimension of the random vectors
+    corr <- 0.5 # for correlated graphs
+
+    (nV1 <- 1+s+n+m)
+    (nV2 <- 1+s+n+mp)
+    lpvs <- sample_sphere_surface(dim=d, n=nV1)/1.5 # random vectors for RDPG
+    gg <- rdpg.sample.correlated(t(lpvs),corr)
+    g1 <- gg[[1]]; 
+    g2 <- gg[[2]]; 
+    g2 <- delete_vertices(g2,v=(nV2+1):nV1); # remove m vertices from G' to make |V(G)| != |V(G')|
+    W <- intersect(V(g1),V(g2)) # shared vertices
+} else {
+    data("HSgraphs")
+    if (HS == "full") {
+        # rearrange the vertices so that the to-be-selected seeds are valid
+        perm.fb <- c(coremap[,1],setdiff(1:vcount(HSfbgraphfull),coremap[,1]))
+        perm.fr <- c(coremap[,2],setdiff(1:vcount(HSfriendsgraphfull),coremap[,2]))
+        g1 <- permute.vertices(HSfbgraphfull,perm.fb) # (156,1437)
+        g2 <- permute.vertices(HSfriendsgraphfull,perm.fr) # (134,668)
+        W <- 1:nrow(coremap) # seeds should be selected from the shared (core) vertices
+    } else { # core graphs
+        g1 <- HSfbgraphcore # (82,513)
+        g2 <- HSfrgraphcore # (82,214)
+        W <- intersect(V(g1),V(g2)) # shared vertices
+    }
+}
+```
+
+```{r seed}
+# Randomly select x and S from W, the shared vertices
+(x <- sample(W,1))
+W <- setdiff(W,x) # exclude x from W
+maxseed <- min(length(W),s)
+(S <- sort(sample(W,maxseed))) 
+```
+
+```{r sgm,echo=TRUE,eval=TRUE, w=5,h=5,fig.cap=paste("A submatrix of a probability matrix output from SGM. Rows correspond to vertices in $V(G_x)$ and columns correspond to vertices in $V(G\'_x)$. The first ",length(NBDS$Sx)," rows and columns correspond to the seeds $(S_x,S\'_x)$, The next row is $x$. The shaded area (in pink) depicts matching probabilities of vertices in $C\'_x$ against $x$ in $V(G_x)$. The vertices with the highest probability among these _candidates_ is nominated as our best guess for $x\'$.")}
+# Determine Sx and C'x, then do SGM
+NBDS <- localnbd(x,S,g1,g2,h,ell,R,gamma,plotF=TRUE)
+str(NBDS)
+```
+```{r probmat,echo=FALSE,eval=FALSE, w=5,h=5,fig.cap=paste("A probability matrix from `SGM`. Rows are $V(G)$ and columns are $V(G\')$. The first ",length(NBDS$Sx)," rows and columns are seeds ($S_x$), The next row is $x$. The shaded area (in pink) depicts matching probabilities of $G\'$ vertices against $x$ in $G$. The one with the highest probability among these _candidates_ becomes the potential $x\'$ we seek.")}
+image(Matrix(NBDS$P[,1:length(NBDS$labelsGxp)]),xlab=expression(G*minute[x]), ylab=expression(G[x]),
+      scales=list(
+#          tck=c(1,0),
+#          alternating=c(3),
+          x=list(
+              at=1:length(NBDS$labelsGxp),
+              labels=as.character(NBDS$labelsGxp)
+          ),
+          y=list(
+              at=1:length(NBDS$labelsGx),
+              labels=as.character(NBDS$labelsGx)
+          )
+      ))
+trellis.focus("panel", 1, 1, highlight=FALSE)
+s <- length(NBDS$Sx)
+lrect((s+0.5),(s+0.5),length(NBDS$labelsGxp)+0.5,(s+1)+0.5,col="red",alpha=0.2)
+trellis.unfocus()
+```
+```{r probmat2,echo=FALSE,eval=FALSE,fig.cap=fn('A probability matrix of SGM. Rows are G vertices and columns are G" vertices. The first $s_x=2$ rows and columns are seeds ($S_x$), The next row is $x$. The shaded area depicts averaged matching probabilities of G2 vertices against $x$. ')}
+dat <- NBDS$P
+dat <- dat[,1:length(NBDS$ind2)]
+rownames(dat) <- NBDS$ind1
+colnames(dat) <- NBDS$ind2
+image2(dat,text.cex=.8,log=TRUE,border="gray70",box.offset=0.1,srt=0,labels=c(2,3),mar=c(1,3,3,1))
+rect(s+1,nrow(dat)-s,ncol(dat)+1,nrow(dat)-s+1,col=rgb(1,0,0,0.2))
+```
+
+```{r prob, h=4,w=5,fig.cap=paste("A bar plot of the matching probability of the candidates. The vertex ", NBDS$labelsGxp[which.max(NBDS$P[length(NBDS$Sx)+1,])]," in $G\'_x$ has the highest probability so is nominated as $x\'$.")}
+# Determine x' amongst the candidates based on the matching probability from SGM
+Sx <- NBDS$Sx
+x <- NBDS$labelsGxp[length(Sx)+1]
+x.ind <- which(NBDS$labelsGx==x)
+Cxp <- match(NBDS$Cxp,NBDS$labelsGxp) 
+
+if (NBDS$case=="possible") {
+    prob <- NBDS$P[x.ind,Cxp]
+    names(prob) <- NBDS$labelsGxp[Cxp]
+    x.prob <- prob[which.max(prob)]
+    vhatstar <- as.integer(names(x.prob))
+    rank.prob <- rank(-prob,ties.method = "average")
+    plot(as.integer(names(prob)), prob, type="h",col=2, lwd=2)
+    rank.prob <- matrix(rank.prob,nrow=1); colnames(rank.prob) <- paste0("V",names(prob))
+    kable(rank.prob,caption="Rank of matching probability for candidates")
+}
+```
+```{r plotg,echo=FALSE,eval=FALSE,h=4,w=8,fig.cap=fn('Plot of G1 (left) and G2 (right). red: v\\*, pink: vhat\\*, cyan: seeds, white: candidates.')}
+op <- par(mfrow=c(1,2))
+V(g1)$color <- V(g2)$color <- "white"
+V(g1)$color[seed] <- V(g2)$color[seed] <- "lightblue"
+V(g1)$color[x] <- "red"
+V(g2)$color[as.integer(names(which.max(prob)))] <- "pink"
+#coords <- layout_(g1,with_lgl())
+coords <- layout_(g1,as_star())
+plot(g1, layout=coords, vertex.size=25)
+plot(g2, layout=coords, vertex.size=25)
+par(op)
+```
+```{r plotg2,echo=FALSE, eval=FALSE,h=4,w=8,fig.cap=fn('Plot of $G$ (left) and $G\'$ (right), where the vertices are colored by red: $x$, cyan: seeds $S_x$, `heat.colors`: candidates (the reddier the color is, the higher the rank of the candidate is). The center vertex is $S_x[1]$, its first neighbors are in the first ring, their first neighbors are in the next ring, and the rests are placed in the outmost ring.')}
+op <- par(mfrow=c(1,2))
+V(g1)$color <- V(g2)$color <- "white"
+V(g1)$color[seed] <- V(g2)$color[seed] <- "lightblue"
+V(g2)$color[NBDS$labelsGxp[candidate]] <- "lightgreen"
+V(g1)$color[1] <- "red"
+V(g2)$label.color <- "blue"
+V(g2)$label.color[as.integer(names(which.max(prob)))] <- "red"
+#coords <- layout_(g1,with_lgl())
+coords1 <- plotlayout(g1)
+coords2 <- plotlayout(g2,vhatstar)
+plot(g1, layout=coords1, vertex.size=25)
+plot(g2, layout=coords2, vertex.size=25)
+par(op)
+```
+```{r plotg3,echo=FALSE, eval=TRUE,h=4,w=8,fig.cap=fn('Plot of $G$ (left) and $G\'$ (right), where the vertices are colored by red in $G$: $x$, cyan on both graphs: $S_x$, `heat.colors` in $G\'$: candidates (the more red the color is, the higher the rank of the candidate is). In both graphs, the center vertex is one of the seeds in $S_x$, its first neighbors are in the first ring, their first neighbors are in the next ring, and the rest are placed in the outmost ring.')}
+V(g1)$color <- V(g2)$color <- "white"
+V(g1)$color[Sx] <- V(g2)$color[Sx] <- "lightblue"
+cand.col <- heat.colors(length(Cxp)+10)
+cand.col <- cand.col[-c(2:11)]
+V(g2)$color[NBDS$labelsGxp[Cxp]] <- cand.col[rank.prob]
+V(g1)$color[x] <- "red"
+V(g2)$label.color <- "blue"
+#V(g2)$label.color[as.integer(names(which.max(prob)))] <- "red"
+#coords <- layout_(g1,with_lgl())
+coords1 <- plotlayout(g1,Sx[1])
+coords2 <- plotlayout(g2,Sx[1])
+op <- par(mfrow=c(1,2),mar=c(1,1,1,1))
+plot(g1, layout=coords1, vertex.size=15)
+plot(g2, layout=coords2, vertex.size=15)
+#plot(g1, vertex.size=15)
+#plot(g2, vertex.size=15)
+par(op)
+```
+```{r graphjs,echo=FALSE,eval=FALSE}
+require(threejs)
+#g12 <- igraph2graphjs(g1)
+#g22 <- igraph2graphjs(g2)
+g12 <- igraph2graphjs(HSfbgraphcore)
+graphjs(g12)
+```
+
+# Simulation
+
+We repeat the above 1000 times by generating new graphs each time, as well as new $x$ and $S$.
+
+We define the normalized rank of the VOI $x$ in $G'$ with respect to the size of the candidate list $C'_x$ as follows,
+
+$$normalized~rank = \frac{rank(x') -1}{|C'_x|-1},$$
+
+so that values of 0, 0.5, and 1 imply that the VOI is first, half-way down, and last in the candidate list, respectively.
+
+NB: In the tables and plots below, 
+
+* `s1` means the number of seeds for `SGM`, $s_x=1$ and so on. 
+* `mean.ncand` means averaged number of candidates for each case.
+* `mean.nrank` means averaged normalized rank for each case.
+
+
+```{r load,echo=FALSE}
+load("~/Dropbox/SGM/nbdmaking/MC-RDPG-rho0.1-seed1-N1-new2.Rbin"); MC1 <- MC
+load("~/Dropbox/SGM/nbdmaking/MC-RDPG-rho0.9-seed1-N1-new2.Rbin"); MC9 <- MC
+case1 <- (sapply(MC1,"[",1))
+case9 <- (sapply(MC9,"[",1))
+seed1 <- paste0("s",sapply(MC1,"[",2)); seed1[case1!="possible"] <- "s0"
+seed9 <- paste0("s",sapply(MC9,"[",2)); seed9[case9!="possible"] <- "s0"
+#ncandidate1 <- paste0("c",sprintf("%02d",as.numeric(sapply(MC1,"[",3))))
+#ncandidate9 <- paste0("c",sprintf("%02d",as.numeric(sapply(MC9,"[",3))))
+ncandidate1 <- as.numeric(sapply(MC1,"[",3))
+ncandidate9 <- as.numeric(sapply(MC9,"[",3))
+rank.vstar1 <- as.numeric(sapply(MC1,"[",4))
+rank.vstar9 <- as.numeric(sapply(MC9,"[",4))
+df1 <- data.frame(corr="0.1",case=case1,seed=seed1,ncand=ncandidate1,rank=rank.vstar1)
+df1 <- df1 %>% mutate(norm.rank=(rank-1)/(ncand-1))
+df9 <- data.frame(corr="0.9",case=case9,seed=seed9,ncand=ncandidate9,rank=rank.vstar9)
+df9 <- df9 %>% mutate(norm.rank=(rank-1)/(ncand-1))
+df19 <- rbind(df1,df9)
+df191 <- subset(df19,case=="possible")
+kable(df1 %>% group_by(case,seed) %>% summarize(count=n(),mean.ncand=mean(ncand), mean.nrank=mean(norm.rank)),caption="A summary of the simulation for `corr=0.1`")
+kable(df9 %>% group_by(case,seed) %>% summarize(count=n(),mean.ncand=mean(ncand), mean.nrank=mean(norm.rank,na.rm=TRUE)),caption="A summary of the simulation for `corr=0.9`")
+```
+
+```{r possible, echo=FALSE, eval=FALSE}
+## How many times "possible" ?
+cat("corr=0.1\n"); table(df1$case)
+cat("corr=0.9\n"); table(df9$case)
+```
+
+```{r seeds, echo=FALSE, eval=FALSE}
+## Number of seeds?
+cat("corr=0.1\n"); table(df191 %>% filter(corr==0.1) %>% select(seed))
+cat("corr=0.9\n"); table(df191 %>% filter(corr==0.9) %>% select(seed))
+```
+
+## Number of candidates?
+```{r cand, echo=FALSE, eval=TRUE,h=4,fig.cap=fn('A histogram of the number of candidates using $MC=1000$.')}
+ggplot(df191,aes(x=ncand,fill=corr)) + scale_fill_brewer(palette="Set1") +
+#       facet_grid(corr~.) +
+#       theme(legend.title=element_blank()) +
+       geom_histogram(binwidth=1,position="identity",alpha=0.5)
+```
+```{r ncand, echo=FALSE, eval=TRUE,h=4,fig.cap=fn('A histogram of the number of candidates as a function of  the number of seeds.')}
+ggplot(df191,aes(x=ncand,fill=corr)) + scale_fill_brewer(palette="Set1") +
+       facet_wrap(~seed) +
+       geom_histogram(binwidth=1,position="identity",alpha=0.5)
+```
+
+## Rank of $x'$?
+
+```{r rank, echo=FALSE, eval=TRUE,h=4,fig.cap=fn('A histogram of the normalized rank of $x\'$ as a function of the number of seeds $s_x$.')}
+#cat("corr=0.1\n"); table(rank.vstar1)
+#sum(table(rank.vstar1))
+#cat("corr=0.9\n"); table(rank.vstar9)
+#sum(table(rank.vstar9))
+#qplot(rank.vstar, geom="bar")
+
+#norm.rank1 <- (rank.vstar1 - 1) / (ncandidate1 - 1)
+#norm.rank9 <- (rank.vstar9 - 1) / (ncandidate9 - 1)
+#df192 <- df19 %>% mutate(norm.rank=(rank-1)/(ncand-1))
+#df191$ncand <- c(paste0("c",sprintf("%02d",as.numeric(sapply(MC1,"[",3)))),
+#                 paste0("c",sprintf("%02d",as.numeric(sapply(MC9,"[",3)))))
+df191$ncand <- paste0("c",sprintf("%02d",df191$ncand))
+df191 <- subset(df191,case=="possible")
+
+ggplot(df191,aes(x=norm.rank,fill=corr)) + scale_fill_brewer(palette="Set1") +
+        facet_wrap(~seed) +
+#        theme(legend.title=element_blank()) +
+        geom_histogram(binwidth=.05,position="identity",alpha=0.5)#, aes(fill=..count..))
+```
+```{r Ex, echo=FALSE, eval=FALSE,w=7,h=5,fig.cap=fn('A histogram of the number of edges between $x\'$ and $S\'_x$.')}
+Exp1 <- as.numeric(sapply(MC1,"[",6))
+Exp9 <- as.numeric(sapply(MC9,"[",6))
+cat("corr=0.1\n"); table(Exp1)
+sum(table(Exp1))
+cat("corr=0.9\n"); table(Exp9)
+sum(table(Exp9))
+
+df2 <- cbind(df192, ExSpx=c(Exp1,Exp9))
+ggplot(subset(df2,seed!="s0"),aes(x=ExSpx,fill=factor(corr))) + scale_fill_brewer(palette="Set1") +
+        facet_wrap(~seed) +
+#        theme(legend.title=element_blank()) +
+        geom_histogram(binwidth=1,position="identity",alpha=0.5)#, aes(fill=..count..))
+```
+```{r Ex2, echo=FALSE, eval=FALSE,w=5,h=4,fig.cap=fn('Average number of edges between $x\'$ and $S\'_x$ as a function of number of seeds, $s_x$.')}
+#kable((dfmean <- df2 %>% group_by(corr,seed) %>% summarize(count=n(),mean.ExSpx=mean(ExSpx))),digits=2,caption = "Average number of edges between $x'$ and $S'_x$ as a function of number of seeds, $s_x")
+dfmean <- df2 %>% group_by(corr,seed) %>% summarize(count=n(),mean.ExSpx=mean(ExSpx))
+ggplot(dfmean, aes(seed,mean.ExSpx,fill=factor(corr))) + scale_fill_brewer(palette="Set1") +
+#        facet_wrap(~corr) + theme(legend.position="none") +
+        geom_bar(stat="identity",position=position_dodge(width=0),alpha=0.5)
+```
+```{r nx, echo=FALSE, eval=FALSE,w=5,h=4,fig.cap=fn('A histogram of the number of common neighbors of $x$ as a function of the number of seeds $s_x$.')}
+Nx1 <- as.numeric(sapply(MC1,"[",5))
+Nx9 <- as.numeric(sapply(MC9,"[",5))
+cat("corr=0.1\n"); table(Nx1)
+sum(table(Nx1))
+cat("corr=0.9\n"); table(Nx9)
+sum(table(Nx9))
+
+df3 <- cbind(df192, nx=c(Nx1,Nx9))
+ggplot(subset(df3,seed!="s0"),aes(x=nx,fill=factor(corr))) + scale_fill_brewer(palette="Set1") +
+        facet_wrap(~seed) +
+        geom_histogram(binwidth=1,position="identity",alpha=0.5)#, aes(fill=..count..))
+```
+```{r rank2, echo=FALSE, eval=TRUE,w=7,h=8,fig.cap=fn('A histogram of the normalized rank of $x\'$ as a function of the number of candidates and the number of seeds.')}
+ggplot(subset(df191,seed %in% c("s1","s2","s3")),aes(x=norm.rank, fill=corr)) +
+        scale_fill_brewer(palette="Set1") +
+        facet_grid(ncand~seed) +
+#        theme(legend.title=element_blank()) +
+#        facet_wrap(~seed+ncand,ncol=3) +
+        geom_histogram(binwidth=.05,position="identity",alpha=0.5)#, aes(fill=..count..))
+```
+
+# Real Data
+
+> R. Mastrandrea, J. Fournet, and A. Barrat, _Contact patterns in a high school: a comparison between data collected using wearable sensors, contact diaries and friendship surveys_, PLoS ONE, 2015.
+
+We look at two High School friendship networks on over-lapping vertex sets found in our draft. The first network consists of 134 vertices, each representing a particular student, in which two vertices are adjacent if one of the students reported or a survey that the two are friends. The second network, with 156 vertices, consists of a Facebook network of profiles in which two vertices are adjacent if they were friends on Facebook. There are 82 $core$ vertices across the two networks for which we know the bijection between the two vertex sets, and it is known that no such bijection exists among the remaining vertices.
+
+## Full Graphs
+
+First, we do the same experiment as above using the full graphs. We randomly select the VOI $x$ and seeds $S$ from the shared vertices (82 core vertices) and repeat for $MC=1000$ times. 
+Since we are choosing the VOI and seeds to be in the core vertex sets, the VOI will exist in the second network; it just may not exist in $C_x'$ (the candidate set generated by the seeds) -- i.e. while the VOI $x$ is guaranteed to have a match $x'$, this vertex will not be found if it is not also in $C'_x$ (`impossible2`).
+
+```{r data, echo=FALSE}
+s <- 12
+load(paste0("~/Dropbox/SGM/nbdmaking/MC-new2-HS-full-s",s,".Rbin"))
+case2 <- (sapply(MC,"[",1))
+seed2 <- paste0("s",sapply(MC,"[",2)); seed2[case2!="possible"] <- "s0"
+ncandidate2 <- as.numeric(sapply(MC,"[",3))
+rank.vstar2 <- as.numeric(sapply(MC,"[",4))
+df2 <- data.frame(case=case2,seed=seed2,ncand=ncandidate2,rank=rank.vstar2)
+df2 <- df2 %>% mutate(norm.rank=(rank-1)/(ncand-1))
+df21 <- subset(df2,case=="possible")
+kable(df2 %>% group_by(case,seed) %>% summarize(count=n(),mean.ncand=mean(ncand), mean.nrank=mean(norm.rank,na.rm=TRUE)),caption="A summary statistics using the full graphs")
+
+#plt <- 27
+```
+
+```{r possible2, echo=FALSE, eval=FALSE}
+### How many times "possible" ?
+table(df2$case)
+```
+
+```{r seeds2, echo=FALSE, eval=FALSE}
+### Number of seeds?
+table(df21$seed)
+```
+
+### Number of candidates?
+```{r cand2, echo=FALSE, eval=TRUE,h=4,fig.cap=fn('A histogram of the number of candidates as a function of the number of seeds.')}
+ggplot(df21,aes(x=ncand,fill=seed)) + scale_fill_brewer(name="s_x",palette="Set1") +
+#    theme(text=element_text(size=13)) + xlab("number of candidates") +
+#       geom_histogram(binwidth=1,position="identity",alpha=0.5)
+#       geom_density(alpha=0.5,adjust=1)
+       facet_wrap(~seed) + #scale_fill_manual("s_x") +
+       geom_histogram(binwidth=1,position="identity",alpha=1)
+```
+
+### Rank of $x'$?
+
+```{r rank3, echo=FALSE, eval=TRUE,h=4,fig.cap=fn('A histogram of the normalized rank of $x\'$ as a function of the number of seeds $s_x$.')}
+#table(rank.vstar)
+#sum(table(rank.vstar))
+#norm.rank <- (rank.vstar2 - 1) / (ncandidate2 - 1)
+#df22 <- df2 %>% mutate(norm.rank=(rank-1)/(ncand-1))
+df2$ncand <- paste0("c",sprintf("%02d",df2$ncand))
+df2 <- subset(df2,case=="possible")
+
+ggplot(df2,aes(x=norm.rank,fill=seed)) + scale_fill_brewer(name="s_x",palette="Set1") +
+        facet_wrap(~seed) + #scale_fill_manual("s_x") +
+        geom_histogram(binwidth=.05,position="identity",alpha=1)#, aes(fill=..count..))
+```
+```{r rank4, echo=FALSE, eval=TRUE,w=7,h=8,fig.cap=fn('A histogram of the normalized rank of $x\'$ as a function of the number of candidates and the number of seeds.')}
+ggplot(subset(df2,seed%in%c("s1","s2","s3")),aes(x=norm.rank,fill=seed)) + scale_fill_brewer(name="s_x",palette="Set1") +
+        facet_grid(ncand~seed) + #scale_fill_manual("s_x") +
+        geom_histogram(binwidth=.05,position="identity",alpha=1)#, aes(fill=..count..))
+```
+
+
+## Core Graphs
+
+We do the same experiment as above using only the core graphs. We randomly select the VOI $x$ and seeds $S$ from the shared vertices (82 core vertices) and repeat for $MC=1000$ times. 
+
+
+```{r cdata, echo=FALSE}
+load(paste0("~/Dropbox/SGM/nbdmaking/MC-new-pval-HS-core-s",s,".Rbin"))
+case3 <- (sapply(MC,"[",1))
+seed3 <- paste0("s",sapply(MC,"[",2)); seed3[case3!="possible"] <- "s0"
+ncandidate3 <- as.numeric(sapply(MC,"[",3))
+rank.vstar3 <- as.numeric(sapply(MC,"[",4))
+df2 <- data.frame(case=case3,seed=seed3,ncand=ncandidate3,rank=rank.vstar3)
+df2 <- df2 %>% mutate(norm.rank=(rank-1)/(ncand-1))
+df21 <- subset(df2,case=="possible")
+#kable(df2 %>% group_by(case,seed) %>% summarize(count=n(),mean.ncand=mean(ncand), mean.nrank=mean(norm.rank,na.rm=TRUE)),caption="A summary statistics using the core graphs")
+
+pval <- as.numeric(sapply(MC,"[",5))
+df3 <- data.frame(case=case3,seed=seed3,ncand=ncandidate3,rank=rank.vstar3,pval=pval)
+df3 <- df3 %>% mutate(norm.rank=(rank-1)/(ncand-1))
+df31 <- df3 %>% group_by(case,seed) %>% summarize(count=n(),mean.ncand=mean(ncand), mean.nrank=mean(norm.rank,na.rm=TRUE),"#pvals<0.05"=sum(pval<0.05,na.rm=TRUE))
+
+df31 <- df3 %>% group_by(case,seed) %>% summarize(count=n(),mean.ncand=mean(ncand), mean.nrank=mean(norm.rank,na.rm=TRUE),"#pvals<0.05"=sum(pval<0.05,na.rm=TRUE),"mean(nrank[pval<0.05])"=mean(norm.rank[pval<0.05],na.rm=TRUE))
+kable(df31, caption="A summary statistics using the core graphs")
+```
+
+```{r pval, echo=FALSE, eval=TRUE,h=4,fig.cap=fn('A density of the p-values as a function of the number of seeds.')}
+df32 <- df3 %>% filter(case=="possible")
+
+p32 <- ggplot(df32,aes(x=pval,fill=seed)) + scale_fill_brewer(name="s_x",palette="Set1") +
+#    theme(text=element_text(size=13)) + 
+    xlab("p-values") + xlim(NA,1) +
+#       geom_histogram(binwidth=1,position="identity",alpha=0.5)
+       facet_wrap(~seed) #+ #scale_fill_manual("s_x") +
+#p32 + geom_density(alpha=1,adjust=1)
+#p32 + stat_density(alpha=1,adjust=1)
+#p32 + geom_freqpoly(alpha=1)
+p32 + geom_histogram(binwidth=.05,position="identity",alpha=1)
+```
+
+```{r cpossible2, echo=FALSE, eval=FALSE}
+### How many times "possible" ?
+table(df2$case)
+```
+
+```{r cseeds2, echo=FALSE, eval=FALSE}
+### Number of seeds?
+table(df21$seed)
+```
+
+### Number of candidates?
+```{r ccand2, echo=FALSE, eval=TRUE,h=4,fig.cap=fn('A histogram of the number of candidates as a function of the number of seeds.')}
+ggplot(df21,aes(x=ncand,fill=seed)) + scale_fill_brewer(name="s_x",palette="Set1") +
+#    theme(text=element_text(size=13)) + 
+    xlab("number of candidates") +
+#       geom_histogram(binwidth=1,position="identity",alpha=0.5)
+#       geom_density(alpha=0.5,adjust=1)
+       facet_wrap(~seed) + #scale_fill_manual("s_x") +
+       geom_histogram(binwidth=1,position="identity",alpha=1)
+```
+
+### Rank of $x'$?
+
+```{r crank3, echo=FALSE, eval=TRUE,h=4,fig.cap=fn('A histogram of the normalized rank of $x\'$ as a function of the number of seeds $s_x$.')}
+#table(rank.vstar)
+#sum(table(rank.vstar))
+#df22 <- df2 %>% mutate(norm.rank=(rank-1)/(ncand-1))
+df21$ncand <- paste0("c",sprintf("%02d",df21$ncand))
+df21 <- subset(df21,case=="possible")
+
+ggplot(df21,aes(x=norm.rank,fill=seed)) + scale_fill_brewer(name="s_x",palette="Set1") +
+        facet_wrap(~seed) + #scale_fill_manual("s_x") +
+        geom_histogram(binwidth=.05,position="identity",alpha=1)#, aes(fill=..count..))
+```
+```{r crank4, echo=FALSE, eval=TRUE,w=7,h=8,fig.cap=fn('A histogram of the normalized rank of $x\'$ as a function of the number of candidates and the number of seeds.')}
+ggplot(subset(df21,seed%in%c("s1","s2","s3")),aes(x=norm.rank,fill=seed)) + scale_fill_brewer(name="s_x",palette="Set1") +
+        facet_grid(ncand~seed) + #scale_fill_manual("s_x") +
+        geom_histogram(binwidth=.05,position="identity",alpha=1)#, aes(fill=..count..))
+```
+
+# `R` Package
+
+The latest `R` source package can be downloaded from [here](http://www.cis.jhu.edu/~parky/XDATA/SGM/VN_0.3.0.tar.gz).  
+It can be installed directly via:
+
+```{r echo=TRUE,eval=FALSE}
+install.packages("http://www.cis.jhu.edu/~parky/D3M/VN_0.3.0.tar.gz",type="source")
+```
+
+```{r vn,echo=TRUE}
+library(help='VN')
+```
+
+
