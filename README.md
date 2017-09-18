@@ -29,4 +29,4 @@ devtools::install_github("youngser/VN")
 
 # Demo
 
-A simulation as well as a real data experiment are provided as a `vignette` [document](VN/vignette/vn.pdf) in the package.
+A simulation as well as a real data experiment are provided as a `vignette` [document](vignette/vn.pdf) in the package.
