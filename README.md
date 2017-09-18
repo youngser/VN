@@ -22,7 +22,7 @@ If it’s a simulation or illustrative experiment: (1) generate $G$ and $G'$ wit
 
 The latest R source package can be installed via github as
 
-```
+```r
 require(devtools)
 devtools::install_github("youngser/VN")
 ```
