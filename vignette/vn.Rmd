@@ -21,6 +21,10 @@ output:
     toc: yes
     toc_depth: 3
     toc_float: no
+vignette: >
+  \VignetteIndexEntry{Vignette Title}
+  \VignetteEngine{knitr::rmarkdown}
+  \VignetteEncoding{UTF-8}
 ---
 
 <style type="text/css">
@@ -197,8 +201,7 @@ NB: Steps 4-8 are the same for simulation, illustrative experiment, and real app
 
 
 ```{r toy1}
-suppressMessages(require(VN)) ||  install.packages("http://username:password@www.cis.jhu.edu/~parky/XDATA/SGM/VN_0.1.0.tar.gz",type="source",method="wget")
-
+suppressMessages(require(VN)) 
 suppressMessages(require(igraph))
 
 sim <- TRUE # if TRUE, run simulation, otherwise do the HS experiment
@@ -637,15 +640,3 @@ ggplot(subset(df21,seed%in%c("s1","s2","s3")),aes(x=norm.rank,fill=seed)) + scal
         facet_grid(ncand~seed) + #scale_fill_manual("s_x") +
         geom_histogram(binwidth=.05,position="identity",alpha=1)#, aes(fill=..count..))
 ```
-
-# `R` Package
-
-The latest `R` source package can be downloaded from [here](http://www.cis.jhu.edu/~parky/XDATA/SGM/VN_0.3.0.tar.gz).  
-It can be installed via:
-```{r echo=TRUE,eval=FALSE}
-install.packages("http://username:password@www.cis.jhu.edu/~parky/XDATA/SGM/VN_0.3.0.tar.gz",type="source",method="wget")
-```
-```{r vn,echo=TRUE}
-library(help='VN')
-```
-

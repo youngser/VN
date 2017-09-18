@@ -15,6 +15,7 @@ Description: Routine to find a nomination list of vertices in one network that
     are likely to correspond to the vertex of interest (VOI) in the other network
     using seeded graph matching on local neighbothoods near the VOI.
 License: GPL (>= 2)
-URL: http://www.cis.jhu.edu/~parky/D3M/vn.html
+URL: https://github.com/youngser/VN
 LazyData: TRUE
 RoxygenNote: 6.0.1
+VignetteBuilder: knitr

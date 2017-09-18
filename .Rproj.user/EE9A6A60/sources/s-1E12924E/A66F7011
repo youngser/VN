@@ -5,18 +5,18 @@
     "dirty" : false,
     "encoding" : "UTF-8",
     "folds" : "",
-    "hash" : "0",
+    "hash" : "1720006011",
     "id" : "A66F7011",
-    "lastKnownWriteTime" : 1505313166,
-    "last_content_update" : 1505313166974,
+    "lastKnownWriteTime" : 1505697073,
+    "last_content_update" : 1505697073960,
     "path" : "~/Dropbox/SGM/VN/R/localnbd.r",
     "project_path" : "R/localnbd.r",
     "properties" : {
-        "cursorPosition" : "13,0",
+        "cursorPosition" : "42,52",
         "docOutlineVisible" : "0",
-        "scrollLine" : "0"
+        "scrollLine" : "22"
     },
-    "relative_order" : 5,
+    "relative_order" : 2,
     "source_on_save" : false,
     "source_window" : "",
     "type" : "r_source"

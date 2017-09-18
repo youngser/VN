@@ -13,7 +13,7 @@
     "project_path" : "R/multiStart.r",
     "properties" : {
     },
-    "relative_order" : 6,
+    "relative_order" : 4,
     "source_on_save" : false,
     "source_window" : "",
     "type" : "r_source"

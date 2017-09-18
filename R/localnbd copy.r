@@ -40,7 +40,7 @@
 #' @author Youngser Park <youngser@jhu.edu>
 #' @export
 
-vnsgm <- function(x,S,g1,g2,h,ell,R,g,pad=0,sim=TRUE,verb=FALSE,plotF=FALSE) {
+vnsgm <- function(x,S,g1,g2,h,ell,R,g,pad=0,sim=FALSE,verb=FALSE,plotF=FALSE) {
 
 ### note: may need to fix later: assumes dimension of A is larger ###
 ### also assumes that B aligns with first nrow(B) vertices of A ###
@@ -126,6 +126,7 @@ vnsgm <- function(x,S,g1,g2,h,ell,R,g,pad=0,sim=TRUE,verb=FALSE,plotF=FALSE) {
 #localnbd <- defunct("localnbd changed name to vnsgm")
 
 localnbd <- vnsgm
+
 
 localnbd2 <- function(x,S,g1,g2,h,R,g,verb=FALSE){
 
