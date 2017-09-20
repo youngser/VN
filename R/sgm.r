@@ -95,7 +95,7 @@ sgm <- function (A,B,seeds,hard=TRUE,iteration=20){
         }
     }
 
-    P <- sgm.orddered(AA,BB,m,start,pad=0,iteration)
+    P <- sgm.ordered(AA,BB,m,start,pad=0,iteration)
     return(P)
 }
 
