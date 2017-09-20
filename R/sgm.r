@@ -28,8 +28,7 @@
 #' @param A a numeric matrix, the adjacency matrix of the first graph
 #' @param B a numeric matrix, the adjacency matrix of the second graph
 #' @param seeds a numeric matrix, the number of seeds x 2 matching vertex table.
-#' If \code{S} is \code{NULL}, then it is using a \eqn{soft} seeding algorithm,
-#' otherwise a \eqn{hard} seeding is used.
+#' If \code{S} is \code{NULL}, then it is using a \eqn{soft} seeding algorithm.
 #' @param hard a bloolean, TRUE for hard seeding, FALSE for soft seeding.
 #' @param iteration The number of iterations for the Frank-Wolfe algorithm
 #' @return A numeric matrix which is the permutation matrix that determines the

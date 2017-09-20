@@ -12,8 +12,7 @@ sgm(A, B, seeds, hard = TRUE, iteration = 20)
 \item{B}{a numeric matrix, the adjacency matrix of the second graph}
 
 \item{seeds}{a numeric matrix, the number of seeds x 2 matching vertex table.
-If \code{S} is \code{NULL}, then it is using a \eqn{soft} seeding algorithm,
-otherwise a \eqn{hard} seeding is used.}
+If \code{S} is \code{NULL}, then it is using a \eqn{soft} seeding algorithm.}
 
 \item{hard}{a bloolean, TRUE for hard seeding, FALSE for soft seeding.}
 
