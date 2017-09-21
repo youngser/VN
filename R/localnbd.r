@@ -157,7 +157,7 @@ vnsgm.ordered <- function(x,S,g1,g2,h,ell,R,g,pad=0,sim=TRUE,verb=FALSE,plotF=FA
 #' @export
 #localnbd <- defunct("localnbd changed name to vnsgm")
 
-#localnbd <- vnsgm
+localnbd <- vnsgm
 
 localnbd2 <- function(x,S,g1,g2,h,R,g,verb=FALSE){
 

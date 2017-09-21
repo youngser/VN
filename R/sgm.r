@@ -44,13 +44,18 @@
 #'
 #' @export
 
-sgm <- function (A,B,seeds,hard=TRUE,iteration=20){
+sgm <- function (A,B,seeds,hard=TRUE,start="barycenter",iteration=20){
+    gamma <- 0.1
     if(is.null(seeds)){
         m=0
         nv1<-nrow(A)
         nv2<-nrow(B)
         nv<-max(nv1,nv2)
-        start<-matrix(1/nv,nv,nv)
+        if (start=="barycenter") {
+            S<-matrix(1/nv,nv,nv)
+        } else {
+            S <- rsp(nv,gamma)
+        }
         AA <- A
         BB <- B
     }else{
@@ -85,17 +90,27 @@ sgm <- function (A,B,seeds,hard=TRUE,iteration=20){
         BB<-rbind(cbind(B11,B12),cbind(B21,B22))
 
         if(hard==TRUE){
-            m=length(temp)
-            n<-nv-m
-            start<-matrix(1/n,n,n)
+            m <- length(temp)
+            n <- nv-m
+            if (start=="barycenter") {
+                S <- matrix(1/n,n,n)
+            } else {
+                S <- rsp(n,gamma)
+            }
         }else{
-            m=0
-            s<-length(temp)
-            start<-rbind(cbind(diag(s),matrix(0,s,nv-s)),cbind(matrix(0,nv-s,s),matrix(1/(nv-s),nv-s,nv-s)))
+            m <- 0
+            s <- length(temp)
+            if (start=="barycenter") {
+                S <- rbind(cbind(diag(s),matrix(0,s,nv-s)),cbind(matrix(0,nv-s,s),matrix(1/(nv-s),nv-s,nv-s)))
+            } else {
+                M <- rsp(nv-s,gamma)
+                S <- diag(nv);
+                S[(s+1):nv,(s+1):nv] <- M
+            }
         }
     }
 
-    P <- sgm.ordered(AA,BB,m,start,pad=0,iteration)
+    P <- sgm.ordered(AA,BB,m,S,pad=0,iteration)
     return(P)
 }
 
