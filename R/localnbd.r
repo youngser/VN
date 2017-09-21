@@ -40,7 +40,39 @@
 #' @author Youngser Park <youngser@jhu.edu>
 #' @export
 
-vnsgm <- function(x,S,g1,g2,h,ell,R,g,pad=0,sim=TRUE,verb=FALSE,plotF=FALSE) {
+
+# Matches Graphs given a seeding of vertex correspondences
+vnsgm <- function(x,seeds,g1,g2,h,ell,R,g) {
+    A <- as.matrix(get.adjacency(g1))
+    B <- as.matrix(get.adjacency(g2))
+    nv1<-nrow(A)
+    nv2<-nrow(B)
+    nv<-max(nv1,nv2)
+
+    nsx1 <- setdiff(1:nv1,c(seeds[,1],x))
+    vec <- c(seeds[,1],x,nsx1)
+
+    AA <- A[vec,vec]
+    ga <- graph_from_adjacency_matrix(AA,mode="undirected")
+
+    ns2 <- setdiff(1:nv2,seeds[,2])
+    vec2 <- c(seeds[,2],ns2)
+
+    BB <- B[vec2,vec2]
+    gb <- graph_from_adjacency_matrix(BB,mode="undirected")
+
+    S <- 1:nrow(seeds)
+    voi <- (nrow(seeds)+1):(nrow(seeds)+length(x))
+
+    P <- vnsgm.ordered(voi,S,ga,gb,h,ell,R,g,pad=0,sim=FALSE,verb=FALSE,plotF=FALSE)
+    return(P)
+}
+
+
+#' Nominates vertices in second graph to match to VOI in first graph --
+#' first reducing the problem, structurally, using provided seeds
+
+vnsgm.ordered <- function(x,S,g1,g2,h,ell,R,g,pad=0,sim=TRUE,verb=FALSE,plotF=FALSE) {
 
 ### note: may need to fix later: assumes dimension of A is larger ###
 ### also assumes that B aligns with first nrow(B) vertices of A ###
@@ -125,7 +157,7 @@ vnsgm <- function(x,S,g1,g2,h,ell,R,g,pad=0,sim=TRUE,verb=FALSE,plotF=FALSE) {
 #' @export
 #localnbd <- defunct("localnbd changed name to vnsgm")
 
-localnbd <- vnsgm
+#localnbd <- vnsgm
 
 localnbd2 <- function(x,S,g1,g2,h,R,g,verb=FALSE){
 

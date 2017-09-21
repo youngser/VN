@@ -32,7 +32,7 @@ multiStart <- function(A,B,R,s,g,pad=0,iter=20){
 #        if (n-s==1) {
 #            Ps <- sgm.igraph(A,B,s,start=M,iteration=iter)
 #        } else {
-            Ps <- sgm(A,B,s,start=M,pad=pad,iteration=iter)
+            Ps <- sgm.ordered(A,B,s,start=M,pad=pad,iteration=iter)
 #        }
         P <- P + Ps$P
     } ## END FOR

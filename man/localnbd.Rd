@@ -7,8 +7,7 @@
                      vertices that are within a path of length \eqn{h}
                      to seed vertices.}
 \usage{
-localnbd(x, S, g1, g2, h, ell, R, g, pad = 0, sim = TRUE, verb = FALSE,
-  plotF = FALSE)
+localnbd(x, S, g1, g2, h, ell, R, g, verb = FALSE, plotF = FALSE)
 }
 \arguments{
 \item{x}{vector of indices for vertices of interest (voi) in \eqn{G_1}}

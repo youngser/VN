@@ -3,6 +3,7 @@
 export(adjcorrH)
 export(getSeeds)
 export(localnbd)
+export(localnbd2)
 export(multiStart)
 export(pass2ranksu)
 export(pass2ranksuplus)
