@@ -242,7 +242,7 @@ sgm.ordered <- function(A,B,m,start,pad=0,iteration=20){
   P=diag(n)
   P=rbind(cbind(diag(m),matrix(0,m,n)),cbind(matrix(0,n,m),P[corr,]))
   corr<-cbind(matrix((m+1):totv, n),matrix(m+corr,n))
-  return(list(corr=corr[,2], P=P, D=D))
+  return(list(A=A22, B=B22, corr=corr[,2], P=P, D=D))
 }
 
 #' Matches Graphs given a seeding of vertex correspondences (igraph implmentation)
