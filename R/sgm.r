@@ -165,7 +165,7 @@ sgm <- function (A,B,seeds,hard=TRUE,start="barycenter",iteration=20){
 
 sgm.ordered <- function(A,B,m,start,pad=0,iteration=20){
   #seeds are assumed to be vertices 1:m in both graphs
-  require('clue')
+    suppressMessages(library(clue))
   totv1<-ncol(A)
   totv2<-ncol(B)
   if(totv1>totv2){
