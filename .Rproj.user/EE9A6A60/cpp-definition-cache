@@ -1,2 +1,62 @@
 [
+    {
+        "definitions" : [
+            {
+                "column" : 6,
+                "file" : "/Users/parky/Dropbox/SGM/VN/src/matmult.cpp",
+                "kind" : 6,
+                "line" : 16,
+                "name" : "armaMatMult(arma::mat, arma::mat)",
+                "parent_name" : "",
+                "usr" : "c:@F@armaMatMult#$@N@arma@C@Mat>#d#S0_#"
+            },
+            {
+                "column" : 6,
+                "file" : "/Users/parky/Dropbox/SGM/VN/src/matmult.cpp",
+                "kind" : 6,
+                "line" : 27,
+                "name" : "armaMatT(arma::mat)",
+                "parent_name" : "",
+                "usr" : "c:@F@armaMatT#$@N@arma@C@Mat>#d#"
+            },
+            {
+                "column" : 6,
+                "file" : "/Users/parky/Dropbox/SGM/VN/src/matmult.cpp",
+                "kind" : 6,
+                "line" : 38,
+                "name" : "eigenMatMult(Eigen::MatrixXd, Eigen::MatrixXd)",
+                "parent_name" : "",
+                "usr" : "c:@F@eigenMatMult#$@N@Eigen@C@Matrix>#d#VI-1#VI-1#VI0#VI-1#VI-1#S0_#"
+            },
+            {
+                "column" : 6,
+                "file" : "/Users/parky/Dropbox/SGM/VN/src/matmult.cpp",
+                "kind" : 6,
+                "line" : 49,
+                "name" : "eigenMatT(Eigen::MatrixXd)",
+                "parent_name" : "",
+                "usr" : "c:@F@eigenMatT#$@N@Eigen@C@Matrix>#d#VI-1#VI-1#VI0#VI-1#VI-1#"
+            },
+            {
+                "column" : 6,
+                "file" : "/Users/parky/Dropbox/SGM/VN/src/matmult.cpp",
+                "kind" : 6,
+                "line" : 60,
+                "name" : "eigenMapMatMult(const Eigen::Map<Eigen::MatrixXd>, Eigen::Map<Eigen::MatrixXd>)",
+                "parent_name" : "",
+                "usr" : "c:@F@eigenMapMatMult#1$@N@Eigen@C@Map>#$@N@Eigen@C@Matrix>#d#VI-1#VI-1#VI0#VI-1#VI-1#VI0#$@N@Eigen@C@Stride>#VI0#VI0#S0_#"
+            },
+            {
+                "column" : 6,
+                "file" : "/Users/parky/Dropbox/SGM/VN/src/matmult.cpp",
+                "kind" : 6,
+                "line" : 71,
+                "name" : "eigenMapMatT(const Eigen::Map<Eigen::MatrixXd>)",
+                "parent_name" : "",
+                "usr" : "c:@F@eigenMapMatT#1$@N@Eigen@C@Map>#$@N@Eigen@C@Matrix>#d#VI-1#VI-1#VI0#VI-1#VI-1#VI0#$@N@Eigen@C@Stride>#VI0#VI0#"
+            }
+        ],
+        "file" : "/Users/parky/Dropbox/SGM/VN/src/matmult.cpp",
+        "file_last_write" : 1509365096
+    }
 ]

@@ -17,7 +17,7 @@ matched.}
 \item{start}{a numeric matrix, the permutation matrix estimate is
 initialized with \code{start}}
 
-\item{iteration}{The number of iterations for the Frank-Wolfe algorithm}
+\item{maxiter}{The number of maxiters for the Frank-Wolfe algorithm}
 }
 \value{
 A numeric matrix which is the permutation matrix that determines the

@@ -4,7 +4,7 @@
 \alias{sgm}
 \title{Matches Graphs given a seeding of vertex correspondences}
 \usage{
-sgm(A, B, seeds, hard = TRUE, start = "barycenter", iteration = 20)
+sgm(A, B, seeds, hard = TRUE, start = "barycenter", maxiter = 20)
 }
 \arguments{
 \item{A}{a numeric matrix, the adjacency matrix of the first graph}
@@ -16,7 +16,7 @@ If \code{S} is \code{NULL}, then it is using a \eqn{soft} seeding algorithm.}
 
 \item{hard}{a bloolean, TRUE for hard seeding, FALSE for soft seeding.}
 
-\item{iteration}{The number of iterations for the Frank-Wolfe algorithm}
+\item{maxiter}{The number of maxiters for the Frank-Wolfe algorithm}
 }
 \value{
 A numeric matrix which is the permutation matrix that determines the
