@@ -299,24 +299,24 @@ sgm.ordered.rcpp <- function(A,B,m,start,pad=0,maxiter=20){
     P<-start
     toggle<-1
     iter<-0
-    x<- eigenMapMatMult(A21, t(B21)) #A21 %*% t(B21)
-    y<- eigenMapMatMult(t(A12), B12) #t(A12) %*% B12
+    x<- armaMatMult(A21, t(B21)) #A21 %*% t(B21)
+    y<- armaMatMult(t(A12), B12) #t(A12) %*% B12
     while (toggle==1 & iter<maxiter)
     {
         iter<-iter+1
-        z<- eigenMapMatMult(eigenMapMatMult(A22, P), t(B22))  #A22 %*% P %*% t(B22)
-        w<- eigenMapMatMult(eigenMapMatMult(t(A22), P), B22)  # t(A22) %*% P %*% B22
+        z<- armaMatMult(armaMatMult(A22, P), t(B22))  #A22 %*% P %*% t(B22)
+        w<- armaMatMult(armaMatMult(t(A22), P), B22)  # t(A22) %*% P %*% B22
         Grad<-x+y+z+w;
         mm=max(abs(Grad))
         ind<-matrix(solve_LSAP(Grad+matrix(mm,totv-m,totv-m), maximum =TRUE))
         T<-diag(n)
         T<-T[ind,]
-        wt<- eigenMapMatMult(eigenMapMatMult(t(A22), T), B22)    #t(A22) %*% T %*% B22
-        c<-sum(diag(eigenMapMatMult(w, t(P))))
-        d<-sum(diag(eigenMapMatMult(wt, t(P)))) + sum(diag(eigenMapMatMult(w, t(T))))
-        e<-sum(diag(eigenMapMatMult(wt, t(T))))
-        u<-sum(diag(eigenMapMatMult(t(P), x) + eigenMapMatMult(t(P),y)))
-        v<-sum(diag(eigenMapMatMult(t(T), x) + eigenMapMatMult(t(T),y)))
+        wt<- armaMatMult(armaMatMult(t(A22), T), B22)    #t(A22) %*% T %*% B22
+        c<-sum(diag(armaMatMult(w, t(P))))
+        d<-sum(diag(armaMatMult(wt, t(P)))) + sum(diag(armaMatMult(w, t(T))))
+        e<-sum(diag(armaMatMult(wt, t(T))))
+        u<-sum(diag(armaMatMult(t(P), x) + armaMatMult(t(P),y)))
+        v<-sum(diag(armaMatMult(t(T), x) + armaMatMult(t(T),y)))
         if( c-d+e==0 && d-2*e+u-v==0){
             alpha<-0
         }else{
@@ -445,95 +445,6 @@ sgm.ordered.gpu <- function(A,B,m,start,pad=0,maxiter=20){
     return(list(A=A22, B=B22, corr=corr[,2], P=P, D=D, iter=iter))
 }
 
-sgm.ordered2 <- function(A,B,m,start,pad=0,maxiter=20){
-    #seeds are assumed to be vertices 1:m in both graphs
-    suppressMessages(library(clue))
-    totv1<-ncol(A)
-    totv2<-ncol(B)
-    if(totv1>totv2){
-        A[A==0]<- -1
-        B[B==0]<- -1
-        diff<-totv1-totv2
-        B.org <- B
-        B <- A
-        B[1:totv2,1:totv2] <- B.org
-        B[-(1:totv2),-(1:totv2)] <- pad
-        #        for (j in 1:diff){B<-cbind(rbind(B,pad),pad)}
-    }else if(totv1<totv2){
-        A[A==0]<- -1
-        B[B==0]<- -1
-        diff<-totv2-totv1
-        A.org <- A
-        A <- B
-        A[1:totv1,1:totv1] <- A.org
-        A[-(1:totv1),-(1:totv1)] <- pad
-        #        for (j in 1:diff){A<-cbind(rbind(A,pad),pad)}
-    }
-    totv<-max(totv1,totv2)
-    n<-totv-m
-    if (m==0){
-        A12<-matrix(0,n,n)
-        A21<-matrix(0,n,n)
-        B12<-matrix(0,n,n)
-        B21<-matrix(0,n,n)
-    } else {
-        A12<-rbind(A[1:m,(m+1):(m+n)])
-        A21<-cbind(A[(m+1):(m+n),1:m])
-        B12<-rbind(B[1:m,(m+1):(m+n)])
-        B21<-cbind(B[(m+1):(m+n),1:m])
-    }
-    if (n==1) {
-        A12=t(A12)
-        A21=t(A21)
-        B12=t(B12)
-        B21=t(B21)
-    }
-
-    A22<-A[(m+1):(m+n),(m+1):(m+n)]
-    B22<-B[(m+1):(m+n),(m+1):(m+n)]
-    tol<-1
-    P<-start
-    toggle<-1
-    iter<-0
-    x<- eigenMapMatMult(A21, t(B21)) #A21 %*% t(B21)
-    y<- eigenMapMatMult(t(A12), B12) #t(A12) %*% B12
-    while (toggle==1 & iter<maxiter)
-    {
-        iter<-iter+1
-        z<- eigenMapMatMult(eigenMapMatMult(A22, P), t(B22))  #A22 %*% P %*% t(B22)
-        w<- eigenMapMatMult(eigenMapMatMult(t(A22), P), B22)  # t(A22) %*% P %*% B22
-        Grad<-x+y+z+w;
-        mm=max(abs(Grad))
-        ind<-matrix(solve_LSAP(Grad+matrix(mm,totv-m,totv-m), maximum =TRUE))
-        T<-diag(n)
-        T<-T[ind,]
-        wt<- eigenMapMatMult(eigenMapMatMult(t(A22), T), B22)    #t(A22) %*% T %*% B22
-        c<-sum(diag(eigenMapMatMult(w, t(P))))
-        d<-sum(diag(eigenMapMatMult(wt, t(P)))) + sum(diag(eigenMapMatMult(w, t(T))))
-        e<-sum(diag(eigenMapMatMult(wt, t(T))))
-        u<-sum(diag(eigenMapMatMult(t(P), x) + eigenMapMatMult(t(P),y)))
-        v<-sum(diag(eigenMapMatMult(t(T), x) + eigenMapMatMult(t(T),y)))
-        if( c-d+e==0 && d-2*e+u-v==0){
-            alpha<-0
-        }else{
-            alpha<- -(d-2*e+u-v)/(2*(c-d+e))}
-        f0<-0
-        f1<- c-e+u-v
-        falpha<-(c-d+e)*alpha^2+(d-2*e+u-v)*alpha
-        if(alpha < tol && alpha > 0 && falpha > f0 && falpha > f1){
-            P<- alpha*P+(1-alpha)*T
-        }else if(f0 > f1){
-            P<-T
-        }else{
-            toggle<-0}
-    }
-    D<-P
-    corr<-matrix(solve_LSAP(P, maximum = TRUE))
-    P=diag(n)
-    P=rbind(cbind(diag(m),matrix(0,m,n)),cbind(matrix(0,n,m),P[corr,]))
-    corr<-cbind(matrix((m+1):totv, n),matrix(m+corr,n))
-    return(list(A=A22, B=B22, corr=corr[,2], P=P, D=D, iter=iter))
-}
 
 sgm.ordered.sparse <- function(A,B,m,start,pad=0,maxiter=20){
   #seeds are assumed to be vertices 1:m in both graphs
