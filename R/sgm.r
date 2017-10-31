@@ -299,24 +299,24 @@ sgm.ordered.rcpp <- function(A,B,m,start,pad=0,maxiter=20){
     P<-start
     toggle<-1
     iter<-0
-    x<- eigenMatMult(A21, t(B21)) #A21 %*% t(B21)
-    y<- eigenMatMult(t(A12), B12) #t(A12) %*% B12
+    x<- eigenMatMapMult(A21, t(B21)) #A21 %*% t(B21)
+    y<- eigenMatMapMult(t(A12), B12) #t(A12) %*% B12
     while (toggle==1 & iter<maxiter)
     {
         iter<-iter+1
-        z<- eigenMatMult(eigenMatMult(A22, P), t(B22))  #A22 %*% P %*% t(B22)
-        w<- eigenMatMult(eigenMatMult(t(A22), P), B22)  # t(A22) %*% P %*% B22
+        z<- eigenMatMapMult(eigenMatMapMult(A22, P), t(B22))  #A22 %*% P %*% t(B22)
+        w<- eigenMatMapMult(eigenMatMapMult(t(A22), P), B22)  # t(A22) %*% P %*% B22
         Grad<-x+y+z+w;
         mm=max(abs(Grad))
         ind<-matrix(solve_LSAP(Grad+matrix(mm,totv-m,totv-m), maximum =TRUE))
         T<-diag(n)
         T<-T[ind,]
-        wt<- eigenMatMult(eigenMatMult(t(A22), T), B22)    #t(A22) %*% T %*% B22
-        c<-sum(diag(eigenMatMult(w, t(P))))
-        d<-sum(diag(eigenMatMult(wt, t(P)))) + sum(diag(eigenMatMult(w, t(T))))
-        e<-sum(diag(eigenMatMult(wt, t(T))))
-        u<-sum(diag(eigenMatMult(t(P), x) + eigenMatMult(t(P),y)))
-        v<-sum(diag(eigenMatMult(t(T), x) + eigenMatMult(t(T),y)))
+        wt<- eigenMatMapMult(eigenMatMapMult(t(A22), T), B22)    #t(A22) %*% T %*% B22
+        c<-sum(diag(eigenMatMapMult(w, t(P))))
+        d<-sum(diag(eigenMatMapMult(wt, t(P)))) + sum(diag(eigenMatMapMult(w, t(T))))
+        e<-sum(diag(eigenMatMapMult(wt, t(T))))
+        u<-sum(diag(eigenMatMapMult(t(P), x) + eigenMatMapMult(t(P),y)))
+        v<-sum(diag(eigenMatMapMult(t(T), x) + eigenMatMapMult(t(T),y)))
         if( c-d+e==0 && d-2*e+u-v==0){
             alpha<-0
         }else{
