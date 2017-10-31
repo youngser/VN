@@ -248,7 +248,7 @@ sgm.ordered <- function(A,B,m,start,pad=0,maxiter=20){
     return(list(A=A22, B=B22, corr=corr[,2], P=P, D=D, iter=iter))
 }
 
-
+#' @export
 sgm.ordered.rcpp <- function(A,B,m,start,pad=0,maxiter=20){
     #seeds are assumed to be vertices 1:m in both graphs
     suppressMessages(library(clue))
@@ -317,6 +317,112 @@ sgm.ordered.rcpp <- function(A,B,m,start,pad=0,maxiter=20){
         e<-sum(diag(armaMatMult(wt, t(T))))
         u<-sum(diag(armaMatMult(t(P), x) + armaMatMult(t(P),y)))
         v<-sum(diag(armaMatMult(t(T), x) + armaMatMult(t(T),y)))
+        if( c-d+e==0 && d-2*e+u-v==0){
+            alpha<-0
+        }else{
+            alpha<- -(d-2*e+u-v)/(2*(c-d+e))}
+        f0<-0
+        f1<- c-e+u-v
+        falpha<-(c-d+e)*alpha^2+(d-2*e+u-v)*alpha
+        if(alpha < tol && alpha > 0 && falpha > f0 && falpha > f1){
+            P<- alpha*P+(1-alpha)*T
+        }else if(f0 > f1){
+            P<-T
+        }else{
+            toggle<-0}
+    }
+    D<-P
+    corr<-matrix(solve_LSAP(P, maximum = TRUE))
+    P=diag(n)
+    P=rbind(cbind(diag(m),matrix(0,m,n)),cbind(matrix(0,n,m),P[corr,]))
+    corr<-cbind(matrix((m+1):totv, n),matrix(m+corr,n))
+    return(list(A=A22, B=B22, corr=corr[,2], P=P, D=D, iter=iter))
+}
+
+#' @export
+sgm.ordered.gpu <- function(A,B,m,start,pad=0,maxiter=20){
+    #seeds are assumed to be vertices 1:m in both graphs
+    suppressMessages(library(clue))
+    suppressMessages(library(gpuR))
+    totv1<-ncol(A)
+    totv2<-ncol(B)
+    if(totv1>totv2){
+        A[A==0]<- -1
+        B[B==0]<- -1
+        diff<-totv1-totv2
+        B.org <- B
+        B <- A
+        B[1:totv2,1:totv2] <- B.org
+        B[-(1:totv2),-(1:totv2)] <- pad
+        #        for (j in 1:diff){B<-cbind(rbind(B,pad),pad)}
+    }else if(totv1<totv2){
+        A[A==0]<- -1
+        B[B==0]<- -1
+        diff<-totv2-totv1
+        A.org <- A
+        A <- B
+        A[1:totv1,1:totv1] <- A.org
+        A[-(1:totv1),-(1:totv1)] <- pad
+        #        for (j in 1:diff){A<-cbind(rbind(A,pad),pad)}
+    }
+    totv<-max(totv1,totv2)
+    n<-totv-m
+    if (m==0){
+        A12<-matrix(0,n,n)
+        A21<-matrix(0,n,n)
+        B12<-matrix(0,n,n)
+        B21<-matrix(0,n,n)
+    } else {
+        A12<-rbind(A[1:m,(m+1):(m+n)])
+        A21<-cbind(A[(m+1):(m+n),1:m])
+        B12<-rbind(B[1:m,(m+1):(m+n)])
+        B21<-cbind(B[(m+1):(m+n),1:m])
+    }
+    if (n==1) {
+        A12=t(A12)
+        A21=t(A21)
+        B12=t(B12)
+        B21=t(B21)
+    }
+
+    A22<-A[(m+1):(m+n),(m+1):(m+n)]
+    B22<-B[(m+1):(m+n),(m+1):(m+n)]
+    tol<-1
+    P<-start
+    toggle<-1
+    iter<-0
+    A21.g <- gpuMatrix(A21, type="float")
+    tB21.g <- gpuMatrix(t(B21), type="float")
+    x.g <- A21.g %*% tB21.g; x <- as.matrix(x.g)
+    tA12.g <- gpuMatrix(t(A12), type="float")
+    B12.g <- gpuMatrix(B12, type="float")
+    y.g <- tA12.g %*% B12.g; y <- as.matrix(y.g)
+
+    A22.g <- gpuMatrix(A22, type="float")
+    B22.g <- gpuMatrix(B22, type="float")
+    tA22.g <- gpuMatrix(t(A22), type="float")
+    tB22.g <- gpuMatrix(t(B22), type="float")
+
+    while (toggle==1 & iter<maxiter)
+    {
+        iter<-iter+1
+        P.g <- gpuMatrix(P, type="float")
+        tP.g <- gpuMatrix(t(P), type="float")
+        z<- A22.g %*% P.g %*% tB22.g; z <- as.matrix(z)
+        w.g <- tA22.g %*% P.g %*% B22.g; w <- as.matrix(w.g)
+        Grad<-x+y+z+w;
+        mm=max(abs(Grad))
+        ind<-matrix(solve_LSAP(Grad+matrix(mm,totv-m,totv-m), maximum =TRUE))
+        T<-diag(n)
+        T<-T[ind,]
+        T.g <- gpuMatrix(T, type="float")
+        tT.g <- gpuMatrix(t(T), type="float")
+        wt.g <- tA22.g %*% T.g %*% B22.g; wt <- as.matrix(wt.g)
+        c<-sum(diag(as.matrix(w.g %*% tP.g)))
+        d<-sum(diag(as.matrix(wt.g %*% tP.g))) + sum(diag(as.matrix(w.g %*% tT.g)))
+        e<-sum(diag(as.matrix(wt.g %*% tT.g)))
+        u<-sum(diag(as.matrix(tP.g %*% x.g) + as.matrix(tP.g %*% y.g)))
+        v<-sum(diag(as.matrix(tT.g %*% x.g) + as.matrix(tT.g %*% y.g)))
         if( c-d+e==0 && d-2*e+u-v==0){
             alpha<-0
         }else{
