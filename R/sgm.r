@@ -168,7 +168,7 @@ sgm <- function (A,B,seeds,hard=TRUE,start="barycenter",maxiter=20){
 #' @export
 sgm.ordered <- function(A,B,m,start,pad=0,maxiter=20){
     #seeds are assumed to be vertices 1:m in both graphs
-    suppressMessages(library(clue))
+#    suppressMessages(library(clue))
     totv1<-ncol(A)
     totv2<-ncol(B)
     if(totv1>totv2){
@@ -217,7 +217,7 @@ sgm.ordered <- function(A,B,m,start,pad=0,maxiter=20){
         w<- t(A22)%*%P%*%B22
         Grad<-x+y+z+w;
         mm=max(abs(Grad))
-        ind<-matrix(solve_LSAP(Grad+matrix(mm,totv-m,totv-m), maximum =TRUE))
+        ind<-matrix(clue::solve_LSAP(Grad+matrix(mm,totv-m,totv-m), maximum =TRUE))
         T<-diag(n)
         T<-T[ind,]
         wt<-t(A22)%*%T%*%B22
@@ -241,7 +241,7 @@ sgm.ordered <- function(A,B,m,start,pad=0,maxiter=20){
             toggle<-0}
     }
     D<-P
-    corr<-matrix(solve_LSAP(P, maximum = TRUE))
+    corr<-matrix(clue::solve_LSAP(P, maximum = TRUE))
     P=diag(n)
     P=rbind(cbind(diag(m),matrix(0,m,n)),cbind(matrix(0,n,m),P[corr,]))
     corr<-cbind(matrix((m+1):totv, n),matrix(m+corr,n))
@@ -251,7 +251,7 @@ sgm.ordered <- function(A,B,m,start,pad=0,maxiter=20){
 #' @export
 sgm.ordered.rcpp <- function(A,B,m,start,pad=0,maxiter=20){
     #seeds are assumed to be vertices 1:m in both graphs
-    suppressMessages(library(clue))
+#    suppressMessages(library(clue))
     totv1<-ncol(A)
     totv2<-ncol(B)
     if(totv1>totv2){
@@ -308,7 +308,7 @@ sgm.ordered.rcpp <- function(A,B,m,start,pad=0,maxiter=20){
         w<- armaMatMult(armaMatMult(t(A22), P), B22)  # t(A22) %*% P %*% B22
         Grad<-x+y+z+w;
         mm=max(abs(Grad))
-        ind<-matrix(solve_LSAP(Grad+matrix(mm,totv-m,totv-m), maximum =TRUE))
+        ind<-matrix(clue::solve_LSAP(Grad+matrix(mm,totv-m,totv-m), maximum =TRUE))
         T<-diag(n)
         T<-T[ind,]
         wt<- armaMatMult(armaMatMult(t(A22), T), B22)    #t(A22) %*% T %*% B22
@@ -332,7 +332,7 @@ sgm.ordered.rcpp <- function(A,B,m,start,pad=0,maxiter=20){
             toggle<-0}
     }
     D<-P
-    corr<-matrix(solve_LSAP(P, maximum = TRUE))
+    corr<-matrix(clue::solve_LSAP(P, maximum = TRUE))
     P=diag(n)
     P=rbind(cbind(diag(m),matrix(0,m,n)),cbind(matrix(0,n,m),P[corr,]))
     corr<-cbind(matrix((m+1):totv, n),matrix(m+corr,n))
@@ -342,7 +342,7 @@ sgm.ordered.rcpp <- function(A,B,m,start,pad=0,maxiter=20){
 #' @export
 sgm.ordered.gpu <- function(A,B,m,start,pad=0,maxiter=20){
     #seeds are assumed to be vertices 1:m in both graphs
-    suppressMessages(library(clue))
+#    suppressMessages(library(clue))
     suppressMessages(library(gpuR))
     totv1<-ncol(A)
     totv2<-ncol(B)
@@ -412,7 +412,7 @@ sgm.ordered.gpu <- function(A,B,m,start,pad=0,maxiter=20){
         w.g <- tA22.g %*% P.g %*% B22.g; w <- as.matrix(w.g)
         Grad<-x+y+z+w;
         mm=max(abs(Grad))
-        ind<-matrix(solve_LSAP(Grad+matrix(mm,totv-m,totv-m), maximum =TRUE))
+        ind<-matrix(clue::solve_LSAP(Grad+matrix(mm,totv-m,totv-m), maximum =TRUE))
         T<-diag(n)
         T<-T[ind,]
         T.g <- gpuMatrix(T, type="float")
@@ -438,7 +438,7 @@ sgm.ordered.gpu <- function(A,B,m,start,pad=0,maxiter=20){
             toggle<-0}
     }
     D<-P
-    corr<-matrix(solve_LSAP(P, maximum = TRUE))
+    corr<-matrix(clue::solve_LSAP(P, maximum = TRUE))
     P=diag(n)
     P=rbind(cbind(diag(m),matrix(0,m,n)),cbind(matrix(0,n,m),P[corr,]))
     corr<-cbind(matrix((m+1):totv, n),matrix(m+corr,n))
