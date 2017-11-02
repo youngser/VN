@@ -208,24 +208,107 @@ sgm.ordered <- function(A,B,m,start,pad=0,maxiter=20){
     P<-start
     toggle<-1
     iter<-0
-    x<- A21%*%t(B21)
-    y<- t(A12)%*%B12
+    x<- A21 %*% t(B21)
+    y<- t(A12) %*% B12
     while (toggle==1 & iter<maxiter)
     {
         iter<-iter+1
-        z<- A22%*%P%*%t(B22)
-        w<- t(A22)%*%P%*%B22
+        z<- A22 %*% P %*% t(B22)
+        w<- t(A22) %*% P %*% B22
         Grad<-x+y+z+w;
         mm=max(abs(Grad))
         ind<-matrix(clue::solve_LSAP(Grad+matrix(mm,totv-m,totv-m), maximum =TRUE))
         T<-diag(n)
         T<-T[ind,]
-        wt<-t(A22)%*%T%*%B22
-        c<-sum(diag(w%*%t(P)))
-        d<-sum(diag(wt%*%t(P)))+sum(diag(w%*%t(T)))
-        e<-sum(diag(wt%*%t(T)))
-        u<-sum(diag(t(P)%*%x+t(P)%*%y))
-        v<-sum(diag(t(T)%*%x+t(T)%*%y))
+        wt<-t(A22) %*% T %*% B22
+        c<-sum(diag(w %*% t(P)))
+        d<-sum(diag(wt %*% t(P))) + sum(diag(w %*% t(T)))
+        e<-sum(diag(wt %*% t(T)))
+        u<-sum(diag(t(P) %*% x + t(P) %*% y))
+        v<-sum(diag(t(T) %*% x + t(T) %*% y))
+        if( c-d+e==0 && d-2*e+u-v==0){
+            alpha<-0
+        }else{
+            alpha<- -(d-2*e+u-v)/(2*(c-d+e))}
+        f0<-0
+        f1<- c-e+u-v
+        falpha<-(c-d+e)*alpha^2+(d-2*e+u-v)*alpha
+        if(alpha < tol && alpha > 0 && falpha > f0 && falpha > f1){
+            P<- alpha*P+(1-alpha)*T
+        }else if(f0 > f1){
+            P<-T
+        }else{
+            toggle<-0}
+    }
+    D<-P
+    corr<-matrix(clue::solve_LSAP(P, maximum = TRUE))
+    P=diag(n)
+    P=rbind(cbind(diag(m),matrix(0,m,n)),cbind(matrix(0,n,m),P[corr,]))
+    corr<-cbind(matrix((m+1):totv, n),matrix(m+corr,n))
+    return(list(A=A22, B=B22, corr=corr[,2], P=P, D=D, iter=iter))
+}
+
+#' @export
+sgm.ordered.cross <- function(A,B,m,start,pad=0,maxiter=20){
+    #seeds are assumed to be vertices 1:m in both graphs
+    #    suppressMessages(library(clue))
+    totv1<-ncol(A)
+    totv2<-ncol(B)
+    if(totv1>totv2){
+        A[A==0]<- -1
+        B[B==0]<- -1
+        diff<-totv1-totv2
+        for (j in 1:diff){B<-cbind(rbind(B,pad),pad)}
+    }else if(totv1<totv2){
+        A[A==0]<- -1
+        B[B==0]<- -1
+        diff<-totv2-totv1
+        for (j in 1:diff){A<-cbind(rbind(A,pad),pad)}
+    }
+    totv<-max(totv1,totv2)
+    n<-totv-m
+    if (m==0){
+        A12<-matrix(0,n,n)
+        A21<-matrix(0,n,n)
+        B12<-matrix(0,n,n)
+        B21<-matrix(0,n,n)
+    } else {
+        A12<-rbind(A[1:m,(m+1):(m+n)])
+        A21<-cbind(A[(m+1):(m+n),1:m])
+        B12<-rbind(B[1:m,(m+1):(m+n)])
+        B21<-cbind(B[(m+1):(m+n),1:m])
+    }
+    if (n==1) {
+        A12=t(A12)
+        A21=t(A21)
+        B12=t(B12)
+        B21=t(B21)
+    }
+
+    A22<-A[(m+1):(m+n),(m+1):(m+n)]
+    B22<-B[(m+1):(m+n),(m+1):(m+n)]
+    tol<-1
+    P<-start
+    toggle<-1
+    iter<-0
+    x<- tcrossprod(A21, B21) # A21 %*% t(B21)
+    y<- crossprod(A12, B12) #t(A12) %*% B12
+    while (toggle==1 & iter<maxiter)
+    {
+        iter <- iter+1
+        z <- tcrossprod(crossprod(t(A22),P), B22) #     A22 %*% P %*% t(B22)
+        w <- crossprod(t(crossprod(A22, P)), B22) #     t(A22) %*% P %*% B22
+        Grad<-x+y+z+w;
+        mm=max(abs(Grad))
+        ind<-matrix(clue::solve_LSAP(Grad+matrix(mm,totv-m,totv-m), maximum =TRUE))
+        T<-diag(n)
+        T<-T[ind,]
+        wt <- crossprod(t(crossprod(A22, T)), B22) #     t(A22) %*% T %*% B22
+        c <- sum(diag(tcrossprod(w, P)))  # w %*% t(P)
+        d <- sum(diag(tcrossprod(wt, P))) + sum(diag(tcrossprod(w, T))) # wt %*% t(P), w %*% t(T)
+        e<-sum(diag(tcrossprod(wt, T))) # wt %*% t(T)
+        u<-sum(diag(crossprod(P, x) + crossprod(P, y))) # t(P) %*% x, t(P) %*% y
+        v<-sum(diag(crossprod(T, x) + crossprod(T, y))) # t(T) %*% x, t(T) %*% y
         if( c-d+e==0 && d-2*e+u-v==0){
             alpha<-0
         }else{
