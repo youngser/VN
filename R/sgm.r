@@ -245,7 +245,7 @@ sgm.ordered <- function(A,B,m,start,pad=0,maxiter=20){
     P=diag(n)
     P=rbind(cbind(diag(m),matrix(0,m,n)),cbind(matrix(0,n,m),P[corr,]))
     corr<-cbind(matrix((m+1):totv, n),matrix(m+corr,n))
-    return(list(A=A22, B=B22, corr=corr[,2], P=P, D=D, iter=iter))
+    return(list(A=A, B=B, corr=corr[,2], P=P, D=D, iter=iter))
 }
 
 #' @export
@@ -328,7 +328,7 @@ sgm.ordered.cross <- function(A,B,m,start,pad=0,maxiter=20){
     P=diag(n)
     P=rbind(cbind(diag(m),matrix(0,m,n)),cbind(matrix(0,n,m),P[corr,]))
     corr<-cbind(matrix((m+1):totv, n),matrix(m+corr,n))
-    return(list(A=A22, B=B22, corr=corr[,2], P=P, D=D, iter=iter))
+    return(list(A=A, B=B, corr=corr[,2], P=P, D=D, iter=iter))
 }
 
 #' @export
@@ -419,7 +419,7 @@ sgm.ordered.rcpp <- function(A,B,m,start,pad=0,maxiter=20){
     P=diag(n)
     P=rbind(cbind(diag(m),matrix(0,m,n)),cbind(matrix(0,n,m),P[corr,]))
     corr<-cbind(matrix((m+1):totv, n),matrix(m+corr,n))
-    return(list(A=A22, B=B22, corr=corr[,2], P=P, D=D, iter=iter))
+    return(list(A=A, B=B, corr=corr[,2], P=P, D=D, iter=iter))
 }
 
 #' @export
@@ -525,7 +525,7 @@ sgm.ordered.gpu <- function(A,B,m,start,pad=0,maxiter=20){
     P=diag(n)
     P=rbind(cbind(diag(m),matrix(0,m,n)),cbind(matrix(0,n,m),P[corr,]))
     corr<-cbind(matrix((m+1):totv, n),matrix(m+corr,n))
-    return(list(A=A22, B=B22, corr=corr[,2], P=P, D=D, iter=iter))
+    return(list(A=A, B=B, corr=corr[,2], P=P, D=D, iter=iter))
 }
 
 
@@ -615,7 +615,7 @@ sgm.ordered.sparse <- function(A,B,m,start,pad=0,maxiter=20){
   P=diag(n)
   P=rbind(cbind(diag(m),matrix(0,m,n)),cbind(matrix(0,n,m),P[corr,]))
   corr<-cbind(matrix((m+1):totv, n),matrix(m+corr,n))
-  return(list(A=A22, B=B22, corr=corr[,2], P=P, D=D, iter=iter))
+  return(list(A=A, B=B, corr=corr[,2], P=P, D=D, iter=iter))
 }
 
 
