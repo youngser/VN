@@ -203,7 +203,9 @@ sgm.ordered <- function(A,B,m,start,pad=0,maxiter=20){
     }
 
     A22<-A[(m+1):(m+n),(m+1):(m+n)]
+    tA22 <- t(A22)
     B22<-B[(m+1):(m+n),(m+1):(m+n)]
+    tB22 <- t(B22)
     tol<-1
     P<-start
     toggle<-1
@@ -213,19 +215,21 @@ sgm.ordered <- function(A,B,m,start,pad=0,maxiter=20){
     while (toggle==1 & iter<maxiter)
     {
         iter<-iter+1
-        z<- A22 %*% P %*% t(B22)
-        w<- t(A22) %*% P %*% B22
+        z<- A22 %*% P %*% tB22
+        w<- tA22 %*% P %*% B22
         Grad<-x+y+z+w;
         mm=max(abs(Grad))
         ind<-matrix(clue::solve_LSAP(Grad+matrix(mm,totv-m,totv-m), maximum =TRUE))
         T<-diag(n)
         T<-T[ind,]
-        wt<-t(A22) %*% T %*% B22
-        c<-sum(diag(w %*% t(P)))
-        d<-sum(diag(wt %*% t(P))) + sum(diag(w %*% t(T)))
-        e<-sum(diag(wt %*% t(T)))
-        u<-sum(diag(t(P) %*% x + t(P) %*% y))
-        v<-sum(diag(t(T) %*% x + t(T) %*% y))
+        tT <- t(T)
+        tP <- t(P)
+        wt<-tA22 %*% T %*% B22
+        c<-sum(diag(w %*% tP))
+        d<-sum(diag(wt %*% tP)) + sum(diag(w %*% tT))
+        e<-sum(diag(wt %*% tT))
+        u<-sum(diag(tP %*% x + tP %*% y))
+        v<-sum(diag(tT %*% x + tT %*% y))
         if( c-d+e==0 && d-2*e+u-v==0){
             alpha<-0
         }else{
@@ -245,8 +249,103 @@ sgm.ordered <- function(A,B,m,start,pad=0,maxiter=20){
     P=diag(n)
     P=rbind(cbind(diag(m),matrix(0,m,n)),cbind(matrix(0,n,m),P[corr,]))
     corr<-cbind(matrix((m+1):totv, n),matrix(m+corr,n))
-    return(list(A=A, B=B, corr=corr[,2], P=P, D=D, iter=iter))
+    return(list(corr=corr[,2], P=P, D=D, iter=iter))
 }
+
+#' @export
+sgm.ordered.rk1<-function(A,B,m,start,maxiter=20,symmetric=TRUE){
+    #seeds are assumed to be vertices 1:m in both graphs
+#    require('clue')
+    totv1<-ncol(A)
+    totv2<-ncol(B)
+    X<-stfp(A,1)$X
+    Y<-stfp(B,1)$X
+    if(symmetric==FALSE){
+        XX<-stfp(t(A),1)$X
+        X<-rbind(X,XX)
+        YY<-stfp(t(B),1)$X
+        Y<-rbind(Y,YY)
+        A=A-t(X)%*%X
+        B=B-t(Y)%*%Y
+    }else{
+        A=A-X%*%t(X)
+        B=B-Y%*%t(Y)}
+    if(totv1>totv2){
+        diff<-totv1-totv2
+        for (j in 1:diff){B<-cbind(rbind(B,0),0)}
+    }else if(totv1<totv2){
+        diff<-totv2-totv1
+        for (j in 1:diff){A<-cbind(rbind(A,0),0)}
+    }
+    totv<-max(totv1,totv2)
+    n<-totv-m
+    if (m==0){
+        A12<-matrix(0,n,n)
+        A21<-matrix(0,n,n)
+        B12<-matrix(0,n,n)
+        B21<-matrix(0,n,n)
+    } else {
+        A12<-rbind(A[1:m,(m+1):(m+n)])
+        A21<-cbind(A[(m+1):(m+n),1:m])
+        B12<-rbind(B[1:m,(m+1):(m+n)])
+        B21<-cbind(B[(m+1):(m+n),1:m])
+    }
+    if (n==1){
+        A12=t(A12)
+        A21=t(A21)
+        B12=t(B12)
+        B21=t(B21)
+    }
+    A22<-A[(m+1):(m+n),(m+1):(m+n)]
+    tA22 <- t(A22)
+    B22<-B[(m+1):(m+n),(m+1):(m+n)]
+    tB22 <- t(B22)
+    tol<-1
+    P<-start
+    toggle<-1
+    iter<-0
+    x<- A21%*%t(B21)
+    y<- t(A12)%*%B12
+    while (toggle==1 & iter<maxiter)
+    {
+        iter<-iter+1
+        z<- A22 %*% P %*% tB22
+        w<- tA22 %*% P %*% B22
+        Grad<-x+y+z+w;
+        mm=max(abs(Grad))
+        ind<-matrix(clue::solve_LSAP(Grad+matrix(mm,totv-m,totv-m), maximum =TRUE))
+        T<-diag(n)
+        T<-T[ind,]
+        tT <- t(T)
+        wt<-tA22 %*% T %*% B22
+        tP <- t(P)
+        c<-sum(diag(w%*%tP))
+        d<-sum(diag(wt%*%tP)) + sum(diag(w%*%tT))
+        e<-sum(diag(wt%*%tT))
+        u<-sum(diag(tP%*%x + tP%*%y))
+        v<-sum(diag(tT%*%x + tT%*%y))
+        if( c-d+e==0 && d-2*e+u-v==0){
+            alpha<-0
+        }else{
+            alpha<- -(d-2*e+u-v)/(2*(c-d+e))}
+        f0<-0
+        f1<- c-e+u-v
+        falpha<-(c-d+e)*alpha^2+(d-2*e+u-v)*alpha
+        if(alpha < tol && alpha > 0 && falpha > f0 && falpha > f1){
+            P<- alpha*P+(1-alpha)*T
+        }else if(f0 > f1){
+            P<-T
+        }else{
+            toggle<-0}
+    }
+    D<-P
+    corr<-matrix(clue::solve_LSAP(P, maximum = TRUE))
+    P=diag(n)
+    P=rbind(cbind(diag(m),matrix(0,m,n)),cbind(matrix(0,n,m),P[corr,]))
+    corr<-cbind(matrix((m+1):totv, n),matrix(m+corr,n))
+    return(list(corr=corr[,2], P=P, D=D, iter=iter))
+}
+
 
 #' @export
 sgm.ordered.cross <- function(A,B,m,start,pad=0,maxiter=20){
@@ -328,7 +427,7 @@ sgm.ordered.cross <- function(A,B,m,start,pad=0,maxiter=20){
     P=diag(n)
     P=rbind(cbind(diag(m),matrix(0,m,n)),cbind(matrix(0,n,m),P[corr,]))
     corr<-cbind(matrix((m+1):totv, n),matrix(m+corr,n))
-    return(list(A=A, B=B, corr=corr[,2], P=P, D=D, iter=iter))
+    return(list(corr=corr[,2], P=P, D=D, iter=iter))
 }
 
 #' @export
@@ -419,7 +518,7 @@ sgm.ordered.rcpp <- function(A,B,m,start,pad=0,maxiter=20){
     P=diag(n)
     P=rbind(cbind(diag(m),matrix(0,m,n)),cbind(matrix(0,n,m),P[corr,]))
     corr<-cbind(matrix((m+1):totv, n),matrix(m+corr,n))
-    return(list(A=A, B=B, corr=corr[,2], P=P, D=D, iter=iter))
+    return(list(corr=corr[,2], P=P, D=D, iter=iter))
 }
 
 #' @export
@@ -525,7 +624,7 @@ sgm.ordered.gpu <- function(A,B,m,start,pad=0,maxiter=20){
     P=diag(n)
     P=rbind(cbind(diag(m),matrix(0,m,n)),cbind(matrix(0,n,m),P[corr,]))
     corr<-cbind(matrix((m+1):totv, n),matrix(m+corr,n))
-    return(list(A=A, B=B, corr=corr[,2], P=P, D=D, iter=iter))
+    return(list(corr=corr[,2], P=P, D=D, iter=iter))
 }
 
 
@@ -615,7 +714,7 @@ sgm.ordered.sparse <- function(A,B,m,start,pad=0,maxiter=20){
   P=diag(n)
   P=rbind(cbind(diag(m),matrix(0,m,n)),cbind(matrix(0,n,m),P[corr,]))
   corr<-cbind(matrix((m+1):totv, n),matrix(m+corr,n))
-  return(list(A=A, B=B, corr=corr[,2], P=P, D=D, iter=iter))
+  return(list(corr=corr[,2], P=P, D=D, iter=iter))
 }
 
 
@@ -819,4 +918,92 @@ sgm2 <- function(A,B,start,S=NULL,pad=0,iteration=20){
     P=rbind(cbind(diag(m),matrix(0,m,n)),cbind(matrix(0,n,m),P[corr,]))
     corr<-cbind(matrix((m+1):totv, n),matrix(m+corr,n))
     return(list(corr=corr[,2], P=P, D=D))
+}
+
+
+
+stfp <- function(A, dim = NULL, scaling = TRUE)
+{
+    suppressMessages(require(irlba))
+
+    if (dim(A)[1]==dim(A)[2]) {
+        L <- nonpsd.laplacian(A) ## diagonal augmentation
+    } else {
+        L <- A
+    }
+
+    if(is.null(dim)) {
+        L.svd <- irlba(L)
+        #        L.svd <- svd(L)
+        dim <- getElbows(L.svd$d,3,plot=FALSE)[2] # ignore this, use "getElbows" instead
+    } else {
+        L.svd <- irlba(L,dim,dim)
+        #        L.svd <- svd(L)
+    }
+
+    L.svd.values <- L.svd$d[1:dim]
+    L.svd.vectors <- L.svd$v[,1:dim]
+
+    if(scaling == TRUE) { # projecting to sphere
+        if(dim == 1)
+            L.coords <- sqrt(L.svd.values) * L.svd.vectors
+        else
+            L.coords <- L.svd.vectors %*% diag(sqrt(L.svd.values))
+    }
+    else {
+        L.coords <- L.svd.vectors
+    }
+
+    return(list(X=L.coords,D=L.svd.values))
+}
+
+getElbows <- function(dat, n = 3, threshold = FALSE, plot = F) {
+    if (is.matrix(dat))
+        d <- sort(apply(dat,2,sd), decreasing=T)
+    else
+        d <- sort(dat,decreasing=TRUE)
+
+    if (!is.logical(threshold))
+        d <- d[d > threshold]
+
+    p <- length(d)
+    if (p == 0)
+        stop(paste("d must have elements that are larger than the threshold ",
+                   threshold), "!", sep="")
+
+    lq <- rep(0.0, p)                     # log likelihood, function of q
+    for (q in 1:p) {
+        mu1 <- mean(d[1:q])
+        mu2 <- mean(d[-(1:q)])              # = NaN when q = p
+        sigma2 <- (sum((d[1:q] - mu1)^2) + sum((d[-(1:q)] - mu2)^2)) / (p - 1 - (q < p))
+        lq[q] <- sum( dnorm(  d[1:q ], mu1, sqrt(sigma2), log=TRUE) ) +
+            sum( dnorm(d[-(1:q)], mu2, sqrt(sigma2), log=TRUE) )
+    }
+
+    q <- which.max(lq)
+    if (n > 1 && q < p) {
+        q <- c(q, q + getElbows(d[(q+1):p], n=n-1, plot=FALSE))
+    }
+
+    if (plot==TRUE) {
+        if (is.matrix(dat)) {
+            sdv <- d # apply(dat,2,sd)
+            plot(sdv,type="b",xlab="dim",ylab="stdev")
+            points(q,sdv[q],col=2,pch=19)
+        } else {
+            plot(dat, type="b")
+            points(q,dat[q],col=2,pch=19)
+        }
+    }
+
+    return(q)
+}
+
+nonpsd.laplacian <- function(A)
+{
+    A <- as.matrix(A)
+    n <- nrow(A)
+    s <- rowSums(A)/(n-1)
+    diag(A) <- diag(A)+s
+    return(A)
 }
