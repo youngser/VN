@@ -175,12 +175,14 @@ sgm.ordered <- function(A,B,m,start,pad=0,maxiter=20){
         A[A==0]<- -1
         B[B==0]<- -1
         diff<-totv1-totv2
-        for (j in 1:diff){B<-cbind(rbind(B,pad),pad)}
+        B <- cbind(B, matrix(pad, nrow(B), diff))
+        B <- rbind(B, matrix(pad, diff, ncol(B)))
     }else if(totv1<totv2){
         A[A==0]<- -1
         B[B==0]<- -1
         diff<-totv2-totv1
-        for (j in 1:diff){A<-cbind(rbind(A,pad),pad)}
+        A <- cbind(A, matrix(pad, nrow(A), diff))
+        A <- rbind(A, matrix(pad, diff, ncol(A)))
     }
     totv<-max(totv1,totv2)
     n<-totv-m
