@@ -175,12 +175,16 @@ sgm.ordered <- function(A,B,m,start,pad=0,maxiter=20){
         A[A==0]<- -1
         B[B==0]<- -1
         diff<-totv1-totv2
-        for (j in 1:diff){B<-cbind(rbind(B,pad),pad)}
+#        for (j in 1:diff){B<-cbind(rbind(B,pad),pad)}
+        B <- cbind(B, matrix(pad, nrow(B), diff))
+        B <- rbind(B, matrix(pad, diff, ncol(B)))
     }else if(totv1<totv2){
         A[A==0]<- -1
         B[B==0]<- -1
         diff<-totv2-totv1
-        for (j in 1:diff){A<-cbind(rbind(A,pad),pad)}
+#        for (j in 1:diff){A<-cbind(rbind(A,pad),pad)}
+        A <- cbind(A, matrix(pad, nrow(A), diff))
+        A <- rbind(A, matrix(pad, diff, ncol(A)))
     }
     totv<-max(totv1,totv2)
     n<-totv-m
@@ -253,7 +257,7 @@ sgm.ordered <- function(A,B,m,start,pad=0,maxiter=20){
 }
 
 #' @export
-sgm.ordered.rk1<-function(A,B,m,start,maxiter=20,symmetric=TRUE){
+sgm.ordered.rk1<-function(A,B,m,start,pad=0,maxiter=20,symmetric=TRUE){
     #seeds are assumed to be vertices 1:m in both graphs
 #    require('clue')
     totv1<-ncol(A)
@@ -272,10 +276,14 @@ sgm.ordered.rk1<-function(A,B,m,start,maxiter=20,symmetric=TRUE){
         B=B-Y%*%t(Y)}
     if(totv1>totv2){
         diff<-totv1-totv2
-        for (j in 1:diff){B<-cbind(rbind(B,0),0)}
+#        for (j in 1:diff){B<-cbind(rbind(B,0),0)}
+        B <- cbind(B, matrix(pad, nrow(B), diff))
+        B <- rbind(B, matrix(pad, diff, ncol(B)))
     }else if(totv1<totv2){
         diff<-totv2-totv1
-        for (j in 1:diff){A<-cbind(rbind(A,0),0)}
+#        for (j in 1:diff){A<-cbind(rbind(A,0),0)}
+        A <- cbind(A, matrix(pad, nrow(A), diff))
+        A <- rbind(A, matrix(pad, diff, ncol(A)))
     }
     totv<-max(totv1,totv2)
     n<-totv-m
@@ -357,12 +365,16 @@ sgm.ordered.cross <- function(A,B,m,start,pad=0,maxiter=20){
         A[A==0]<- -1
         B[B==0]<- -1
         diff<-totv1-totv2
-        for (j in 1:diff){B<-cbind(rbind(B,pad),pad)}
+#        for (j in 1:diff){B<-cbind(rbind(B,pad),pad)}
+        B <- cbind(B, matrix(pad, nrow(B), diff))
+        B <- rbind(B, matrix(pad, diff, ncol(B)))
     }else if(totv1<totv2){
         A[A==0]<- -1
         B[B==0]<- -1
         diff<-totv2-totv1
-        for (j in 1:diff){A<-cbind(rbind(A,pad),pad)}
+#        for (j in 1:diff){A<-cbind(rbind(A,pad),pad)}
+        A <- cbind(A, matrix(pad, nrow(A), diff))
+        A <- rbind(A, matrix(pad, diff, ncol(A)))
     }
     totv<-max(totv1,totv2)
     n<-totv-m
@@ -440,19 +452,15 @@ sgm.ordered.rcpp <- function(A,B,m,start,pad=0,maxiter=20){
         A[A==0]<- -1
         B[B==0]<- -1
         diff<-totv1-totv2
-        B.org <- B
-        B <- A
-        B[1:totv2,1:totv2] <- B.org
-        B[-(1:totv2),-(1:totv2)] <- pad
+        B <- cbind(B, matrix(pad, nrow(B), diff))
+        B <- rbind(B, matrix(pad, diff, ncol(B)))
 #        for (j in 1:diff){B<-cbind(rbind(B,pad),pad)}
     }else if(totv1<totv2){
         A[A==0]<- -1
         B[B==0]<- -1
         diff<-totv2-totv1
-        A.org <- A
-        A <- B
-        A[1:totv1,1:totv1] <- A.org
-        A[-(1:totv1),-(1:totv1)] <- pad
+        A <- cbind(A, matrix(pad, nrow(A), diff))
+        A <- rbind(A, matrix(pad, diff, ncol(A)))
 #        for (j in 1:diff){A<-cbind(rbind(A,pad),pad)}
     }
     totv<-max(totv1,totv2)
@@ -532,19 +540,15 @@ sgm.ordered.gpu <- function(A,B,m,start,pad=0,maxiter=20){
         A[A==0]<- -1
         B[B==0]<- -1
         diff<-totv1-totv2
-        B.org <- B
-        B <- A
-        B[1:totv2,1:totv2] <- B.org
-        B[-(1:totv2),-(1:totv2)] <- pad
+        B <- cbind(B, matrix(pad, nrow(B), diff))
+        B <- rbind(B, matrix(pad, diff, ncol(B)))
         #        for (j in 1:diff){B<-cbind(rbind(B,pad),pad)}
     }else if(totv1<totv2){
         A[A==0]<- -1
         B[B==0]<- -1
         diff<-totv2-totv1
-        A.org <- A
-        A <- B
-        A[1:totv1,1:totv1] <- A.org
-        A[-(1:totv1),-(1:totv1)] <- pad
+        A <- cbind(A, matrix(pad, nrow(A), diff))
+        A <- rbind(A, matrix(pad, diff, ncol(A)))
         #        for (j in 1:diff){A<-cbind(rbind(A,pad),pad)}
     }
     totv<-max(totv1,totv2)
@@ -637,19 +641,15 @@ sgm.ordered.sparse <- function(A,B,m,start,pad=0,maxiter=20){
     B[B==0]<- -1
     diff<-totv1-totv2
 #    for (j in 1:diff){B<-cbind(rbind(B,pad),pad)}
-    B.org <- B
-    B <- A
-    B[1:totv2,1:totv2] <- B.org
-    B[-(1:totv2),-(1:totv2)] <- pad
+    B <- cbind(B, matrix(pad, nrow(B), diff))
+    B <- rbind(B, matrix(pad, diff, ncol(B)))
   }else if(totv1<totv2){
     A[A==0]<- -1
     B[B==0]<- -1
     diff<-totv2-totv1
 #    for (j in 1:diff){A<-cbind(rbind(A,pad),pad)}
-    A.org <- A
-    A <- B
-    A[1:totv1,1:totv1] <- A.org
-    A[-(1:totv1),-(1:totv1)] <- pad
+    A <- cbind(A, matrix(pad, nrow(A), diff))
+    A <- rbind(A, matrix(pad, diff, ncol(A)))
   }
   totv<-max(totv1,totv2)
   n<-totv-m
