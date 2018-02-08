@@ -34,6 +34,7 @@ NULL
 #' @param seeds a numeric matrix, the number of seeds x 2 matching vertex table.
 #' If \code{S} is \code{NULL}, then it is using a \eqn{soft} seeding algorithm.
 #' @param hard a bloolean, TRUE for hard seeding, FALSE for soft seeding.
+#' @param pad a scalar value for padding
 #' @param maxiter The number of maxiters for the Frank-Wolfe algorithm
 #' @return A numeric matrix which is the permutation matrix that determines the
 #' bijection between the graphs of \code{A} and \code{B}
@@ -48,7 +49,7 @@ NULL
 #'
 #' @export
 
-sgm <- function (A,B,seeds,hard=TRUE,start="barycenter",maxiter=20){
+sgm <- function (A,B,seeds,hard=TRUE,pad=0,start="barycenter",maxiter=20){
     gamma <- 0.1
     if(is.null(seeds)){
         m=0
@@ -114,7 +115,7 @@ sgm <- function (A,B,seeds,hard=TRUE,start="barycenter",maxiter=20){
         }
     }
 
-    P <- sgm.ordered(AA,BB,m,S,pad=0,maxiter)
+    P <- sgm.ordered(AA,BB,m,S,pad,maxiter)
     return(P)
 }
 
