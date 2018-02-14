@@ -51,7 +51,55 @@ NULL
 
 sgm <- function (A,B,seeds,hard=TRUE,pad=0,start="barycenter",maxiter=20){
     gamma <- 0.1
-    if(is.null(seeds)){
+    nv1<-nrow(A)
+    nv2<-nrow(B)
+    nv<-max(nv1,nv2)
+
+    if(is.null(seeds)) { # no seed!
+        m=0
+        if (start=="barycenter") {
+            S<-matrix(1/nv,nv,nv)
+        } else {
+            S <- rsp(nv,gamma)
+        }
+        AA <- A
+        BB <- B
+    }else {
+        A.ind <- c(seeds[,1], setdiff(1:nv1, seeds[,1]))
+        B.ind <- c(seeds[,2], setdiff(1:nv2, seeds[,2]))
+        AA <- A[A.ind, A.ind]
+        BB <- B[B.ind, B.ind]
+
+        m <- nrow(seeds)
+        if (hard==TRUE) {
+            n <- nv-m
+            if (start=="barycenter") {
+                S <- matrix(1/n,n,n)
+            } else {
+                S <- rsp(n,gamma)
+            }
+        } else {
+            s <- m
+            m <- 0
+            if (start=="barycenter") {
+                offdiag <- matrix(0,s,nv-s)
+                S <- rbind(cbind(diag(s), offdiag),
+                           cbind(t(offdiag),matrix(1/(nv-s),nv-s,nv-s)))
+            } else {
+                M <- rsp(nv-s,gamma)
+                S <- diag(nv);
+                S[(s+1):nv,(s+1):nv] <- M
+            }
+        }
+    }
+
+    P <- sgm.ordered(AA,BB,m,S,pad,maxiter)
+    return(P)
+}
+
+sgm2 <- function (A,B,seeds,hard=TRUE,pad=0,start="barycenter",maxiter=20){
+    gamma <- 0.1
+    if(is.null(seeds)){ # no seed!
         m=0
         nv1<-nrow(A)
         nv2<-nrow(B)
@@ -822,7 +870,7 @@ sgm.igraph<-function(A,B,m,start,iteration){
 #'
 #' @export
 
-sgm2 <- function(A,B,start,S=NULL,pad=0,iteration=20){
+sgm.ori <- function(A,B,start,S=NULL,pad=0,iteration=20){
     # forcing seeds to be first m vertices in both graphs
     m <- nrow(S)
     if(is.null(m)){
