@@ -239,10 +239,7 @@ sgm.ordered <- function(A,B,m,start,pad=0,maxiter=20){
     totv<-max(totv1,totv2)
     n<-totv-m
     if (m==0){
-        A12<-matrix(0,n,n)
-        A21<-matrix(0,n,n)
-        B12<-matrix(0,n,n)
-        B21<-matrix(0,n,n)
+        A12 <- A21 <- B12 <- B21 <- matrix(0,n,n)
     } else {
         A12<-rbind(A[1:m,(m+1):(m+n)])
         A21<-cbind(A[(m+1):(m+n),1:m])
@@ -250,10 +247,7 @@ sgm.ordered <- function(A,B,m,start,pad=0,maxiter=20){
         B21<-cbind(B[(m+1):(m+n),1:m])
     }
     if (n==1) {
-        A12=t(A12)
-        A21=t(A21)
-        B12=t(B12)
-        B21=t(B21)
+        A12 <- A21 <- B12 <- B21 <- t(A12)
     }
 
     A22<-A[(m+1):(m+n),(m+1):(m+n)]
@@ -266,35 +260,36 @@ sgm.ordered <- function(A,B,m,start,pad=0,maxiter=20){
     iter<-0
     x<- A21 %*% t(B21)
     y<- t(A12) %*% B12
+    xy <- x + y
     while (toggle==1 & iter<maxiter)
     {
         iter<-iter+1
-        z<- A22 %*% P %*% tB22
-        w<- tA22 %*% P %*% B22
-        Grad<-x+y+z+w;
-        mm=max(abs(Grad))
+        z <- A22 %*% P %*% tB22
+        w <- tA22 %*% P %*% B22
+        Grad <- xy+z+w;
+        mm <- max(abs(Grad))
         ind<-matrix(clue::solve_LSAP(Grad+matrix(mm,totv-m,totv-m), maximum =TRUE))
-        T<-diag(n)
-        T<-T[ind,]
-        tT <- t(T)
+        Pdir <- diag(n)
+        Pdir <- Pdir[ind,]
+        tPdir <- t(Pdir)
         tP <- t(P)
-        wt<-tA22 %*% T %*% B22
-        c<-sum(diag(w %*% tP))
-        d<-sum(diag(wt %*% tP)) + sum(diag(w %*% tT))
-        e<-sum(diag(wt %*% tT))
-        u<-sum(diag(tP %*% x + tP %*% y))
-        v<-sum(diag(tT %*% x + tT %*% y))
+        wt <- tA22 %*% Pdir %*% B22
+        c <- sum(diag(w %*% tP))
+        d <- sum(diag(wt %*% tP)) + sum(diag(w %*% tPdir))
+        e <- sum(diag(wt %*% tPdir))
+        u <- sum(diag(tP %*% x + tP %*% y))
+        v <- sum(diag(tPdir %*% x + tPdir %*% y))
         if( c-d+e==0 && d-2*e+u-v==0){
-            alpha<-0
+            alpha <- 0
         }else{
-            alpha<- -(d-2*e+u-v)/(2*(c-d+e))}
-        f0<-0
-        f1<- c-e+u-v
-        falpha<-(c-d+e)*alpha^2+(d-2*e+u-v)*alpha
+            alpha <- -(d-2*e+u-v)/(2*(c-d+e))}
+        f0 <- 0
+        f1 <- c-e+u-v
+        falpha <- (c-d+e)*alpha^2+(d-2*e+u-v)*alpha
         if(alpha < tol && alpha > 0 && falpha > f0 && falpha > f1){
-            P<- alpha*P+(1-alpha)*T
+            P <- alpha*P+(1-alpha)*Pdir
         }else if(f0 > f1){
-            P<-T
+            P <- Pdir
         }else{
             toggle<-0}
     }
