@@ -82,9 +82,10 @@ sgm <- function (A,B,seeds,hard=TRUE,pad=0,start="barycenter",maxiter=20){
             s <- m
             m <- 0
             if (start=="barycenter") {
+                diag1 <- diag(s)
+                diag2 <- matrix(1/(nv-s),nv-s,nv-s)
                 offdiag <- matrix(0,s,nv-s)
-                S <- rbind(cbind(diag(s), offdiag),
-                           cbind(t(offdiag),matrix(1/(nv-s),nv-s,nv-s)))
+                S <- rbind(cbind(diag1,offdiag), cbind(t(offdiag),diag2))
             } else {
                 M <- rsp(nv-s,gamma)
                 S <- diag(nv);
