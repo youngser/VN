@@ -4,7 +4,7 @@
 \alias{sgm.ordered}
 \title{Matches Graphs given a seeding of vertex correspondences}
 \usage{
-sgm.ordered(A, B, m, start, pad = 0, maxiter = 20)
+sgm.ordered(A, B, m, start, pad = 0, maxiter = 20, LAP = "exact")
 }
 \arguments{
 \item{A}{a numeric matrix, the adjacency matrix of the first graph}
@@ -20,6 +20,8 @@ initialized with \code{start}}
 \item{pad}{a scalar value for padding}
 
 \item{maxiter}{The number of maxiters for the Frank-Wolfe algorithm}
+
+\item{LAP}{a character either "exact" or "approx"}
 }
 \value{
 A numeric matrix which is the permutation matrix that determines the

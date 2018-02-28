@@ -204,6 +204,7 @@ sgm2 <- function (A,B,seeds,hard=TRUE,pad=0,start="barycenter",maxiter=20){
 #' initialized with \code{start}
 #' @param pad a scalar value for padding
 #' @param maxiter The number of maxiters for the Frank-Wolfe algorithm
+#' @param LAP a character either "exact" or "approx"
 #' @return A numeric matrix which is the permutation matrix that determines the
 #' bijection between the graphs of \code{A} and \code{B}
 #' @author Vince Lyzinski \url{http://www.ams.jhu.edu/~lyzinski/}
@@ -216,7 +217,7 @@ sgm2 <- function (A,B,seeds,hard=TRUE,pad=0,start="barycenter",maxiter=20){
 #' Online: \url{http://arxiv.org/abs/1209.0367}
 #'
 #' @export
-sgm.ordered <- function(A,B,m,start,pad=0,maxiter=20){
+sgm.ordered <- function(A,B,m,start,pad=0,maxiter=20,LAP="exact"){
     #seeds are assumed to be vertices 1:m in both graphs
 #    suppressMessages(library(clue))
     totv1<-ncol(A)
@@ -267,8 +268,16 @@ sgm.ordered <- function(A,B,m,start,pad=0,maxiter=20){
         z <- A22 %*% P %*% tB22
         w <- tA22 %*% P %*% B22
         Grad <- xy+z+w;
-        mm <- max(abs(Grad))
-        ind<-matrix(clue::solve_LSAP(Grad+matrix(mm,totv-m,totv-m), maximum =TRUE))
+
+        if (LAP=="exact") {
+            mm <- max(abs(Grad))
+            ind<-matrix(clue::solve_LSAP(Grad+matrix(mm,totv-m,totv-m), maximum =TRUE))
+        } else { # approx
+            temp <- matrix(0, n, n)
+            Grad1 <- rbind(cbind(temp, t(Grad)),cbind(Grad, temp))
+            ind <- parallelMatch(Grad1)
+        }
+
         Pdir <- diag(n)
         Pdir <- Pdir[ind,]
         tPdir <- t(Pdir)
@@ -294,7 +303,13 @@ sgm.ordered <- function(A,B,m,start,pad=0,maxiter=20){
             toggle<-0}
     }
     D<-P
-    corr<-matrix(clue::solve_LSAP(P, maximum = TRUE))
+
+    if (LAP=="exact") {
+        corr<-matrix(clue::solve_LSAP(P, maximum = TRUE))
+    } else {
+        PP <- rbind(cbind(temp, t(P)),cbind(P, temp))
+        corr<- t(parallelMatch(PP))
+    }
     P=diag(n)
     P=rbind(cbind(diag(m),matrix(0,m,n)),cbind(matrix(0,n,m),P[corr,]))
     corr<-cbind(matrix((m+1):totv, n),matrix(m+corr,n))
@@ -1052,3 +1067,104 @@ nonpsd.laplacian <- function(A)
     diag(A) <- diag(A)+s
     return(A)
 }
+
+## for aLAP
+# Help method of parrallelMatch
+matchVertex <- function(s, candidate, mate, Q) {
+    if (candidate[candidate[s]] == s) {
+        mate[s] <- candidate[s];
+        mate[candidate[s]] <- s;
+        Q <- c(Q, s, candidate[s]);
+    }
+    return(list(Q, mate));
+}
+
+findMate <- function(s, graph, mate) {
+    # Initialization
+    max_wt <- -Inf;
+    max_wt_id <- NaN;
+
+    # Find the locally dominant vertices for one single vertex
+    if (s <= dim(graph)[2] / 2) {
+        for (i in (dim(graph)[2] / 2 + 1) : dim(graph)[2]) {
+            if (is.nan(mate[i]) && max_wt < graph[s, i]) {
+                max_wt <- graph[s, i];
+                max_wt_id <- i;
+            }
+        }
+    }
+
+    else {
+        for (i in 1 : (dim(graph)[2] / 2)) {
+            if (is.nan(mate[i]) && max_wt < graph[s, i]) {
+                max_wt <- graph[s, i];
+                max_wt_id <- i;
+            }
+        }
+    }
+    return(max_wt_id);
+}
+
+
+# Function to solve Linear Assignment Problem
+# Using algorithm in A multithreaded algorithm for network alignment
+# via approximate matching
+# graph has the form: [0 C; C' 0] where C is the cost function
+# Output mate is a permutation
+# Written by Ao Sun and Lingyao Meng
+parallelMatch <- function(graph) {
+    ##require('foreach')
+    ##source('findMate.R');
+    ##source('matchVertex.R');
+    ## adjacency matrix corresponding to graph G
+    numVertices <- nrow(graph)
+
+    ## Initialize the matching vector with NaN
+    mate <- rep(NaN, numVertices)
+
+    ## Initialize the other parameters
+    candidate <- rep(0, numVertices);
+    qC <- vector(); qN <- vector();
+
+    #--------------------------------- Phase 1 ------------------------------------------
+    candidate <- sapply(seq_len(numVertices), function(x) findMate(x,graph,mate))
+
+    for (j in 1 : numVertices) {
+        temp <- matchVertex(j, candidate, mate, qC);
+        qC <- temp[[1]]; mate <- temp[[2]];
+    }
+    #--------------------------------- Phase 2 ------------------------------------------
+    repeat {
+        for (k in 1 : length(qC)) {
+            ## Return to the index of adjacent Vertex
+            if (qC[k] <= (numVertices / 2)) {
+
+                for (h in (numVertices / 2 + 1) : numVertices) {
+                    if ((candidate[h] == qC[k]) && (h != mate[qC[k]])) {
+                        candidate[h] <- findMate(h, graph, mate);
+                        temp2 <- matchVertex(h, candidate, mate, qN);
+                        qN <- unlist(temp2[1]); mate <- unlist(temp2[2]);
+                    }
+                }
+            }
+            else {
+                for (h in 1 : (numVertices / 2)) {
+                    if ((candidate[h] == qC[k]) && h != mate[qC[k]]) {
+                        candidate[h] <- findMate(h, graph, mate);
+                        temp3 <- matchVertex(h, candidate, mate, qN);
+                        qN <- unlist(temp3[1]); mate <- unlist(temp3[2]);
+                    }
+                }
+            }
+        }
+
+        qC <- qN;
+        qN <- vector();
+        if (length(qC) == 0) {
+            break;
+        }
+    }
+    mate <- mate[(numVertices / 2 + 1) : length(mate)];
+    return(mate)
+}
+
