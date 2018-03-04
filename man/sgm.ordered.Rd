@@ -4,7 +4,8 @@
 \alias{sgm.ordered}
 \title{Matches Graphs given a seeding of vertex correspondences}
 \usage{
-sgm.ordered(A, B, m, start, pad = 0, maxiter = 20, LAP = "exact")
+sgm.ordered(A, B, m, start, pad = 0, maxiter = 20, LAP = "exact",
+  verbose = FALSE)
 }
 \arguments{
 \item{A}{a numeric matrix, the adjacency matrix of the first graph}

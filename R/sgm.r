@@ -217,7 +217,7 @@ sgm2 <- function (A,B,seeds,hard=TRUE,pad=0,start="barycenter",maxiter=20){
 #' Online: \url{http://arxiv.org/abs/1209.0367}
 #'
 #' @export
-sgm.ordered <- function(A,B,m,start,pad=0,maxiter=20,LAP="exact"){
+sgm.ordered <- function(A,B,m,start,pad=0,maxiter=20,LAP="exact",verbose=FALSE){
     #seeds are assumed to be vertices 1:m in both graphs
 #    suppressMessages(library(clue))
     totv1<-ncol(A)
@@ -301,6 +301,7 @@ sgm.ordered <- function(A,B,m,start,pad=0,maxiter=20,LAP="exact"){
             P <- Pdir
         }else{
             toggle<-0}
+        if (verbose) cat("iter = ", iter, "\n")
     }
     D<-P
 
@@ -1092,9 +1093,7 @@ findMate <- function(s, graph, mate) {
                 max_wt_id <- i;
             }
         }
-    }
-
-    else {
+    } else {
         for (i in 1 : (dim(graph)[2] / 2)) {
             if (is.nan(mate[i]) && max_wt < graph[s, i]) {
                 max_wt <- graph[s, i];
@@ -1146,8 +1145,7 @@ parallelMatch <- function(graph) {
                         qN <- unlist(temp2[1]); mate <- unlist(temp2[2]);
                     }
                 }
-            }
-            else {
+            } else {
                 for (h in 1 : (numVertices / 2)) {
                     if ((candidate[h] == qC[k]) && h != mate[qC[k]]) {
                         candidate[h] <- findMate(h, graph, mate);
