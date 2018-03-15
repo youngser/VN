@@ -13,7 +13,8 @@ seeds within the \eqn{h}-hop nbd of x, and an \eqn{ell}-hop induced
 nbd of \eqn{G_2} around the corresponding seeds.
 Then, matches these induced subgraphs via \code{multiStart}.}
 \usage{
-vnsgm(x, seeds, g1, g2, h, ell, R, g)
+vnsgm(x, seeds, g1, g2, h, ell, R, g, pad = 0, sim = FALSE, verb = FALSE,
+  protF = FALSE)
 }
 \arguments{
 \item{x}{vector of indices for vertices of interest (voi) in \eqn{G_1}}
@@ -33,8 +34,6 @@ to create \eqn{ell}-hop induced subgraph of \eqn{G_1}}
 \item{g}{gamma to be used with \code{multiStart}, max tolerance for alpha, how far away from the barycenter user is willing to go for
 the initialization of \code{sgm} on any given iteration}
 
-\item{S}{vector of a set of seeds}
-
 \item{pad}{a scalar value for padding for sgm}
 
 \item{sim}{boolean: default TRUE (yes, this is a simulation) --
@@ -42,6 +41,8 @@ assumes x = x' (i.e. indices for VOI in \eqn{G_1} are the same as
 the indices for the corresponding matches in \eqn{G_2})}
 
 \item{verb}{verbose outputs}
+
+\item{S}{vector of a set of seeds}
 
 \item{plotF}{boolean to plot the probability matrix}
 }
