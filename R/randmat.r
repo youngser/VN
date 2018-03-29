@@ -2,10 +2,11 @@
 #'              SBM
 #'
 #' @param  B block model matrix of probabilities
-#' @param  n vector of sizes of blocks in main matrix A
-#' @param  m vector of sizes of corresponding matrix created from A
+#' @param  n vector of sizes of blocks in larger matrix A
+#' @param  m vector of sizes of corresponding matrix created from A --
+#' it is assumed that m[i] <= n[i] for all i.
 #' @param  P matrix of probabilities size of sum(n)
-#' @param  corr correlation of edge in B v. A (should be positive)
+#' @param  corr correlation of edge in B v. A 
 #' @param  setseed True, then set seed. False, then doesn't
 #'
 #' @return  A  the primary adjacency matrix A

@@ -2,7 +2,7 @@
 #'      in \eqn{G_1}
 #'
 #' @param k number of vertices we will consider from \eqn{G_2}
-#' @param M multistart matrix (doubly stochastic)
+#' @param M matrix of proportions (rows sum to 1) 
 #'
 #' @return  probability matrix based on likelihood each vertex in
 #'                 \eqn{G2} is matched to corresponding vertex of
@@ -26,8 +26,8 @@ topk <- function(k,M){
         q$x[(k+1):n] = 0;
 
         p = rep(0,n)
-        for(i in 1:n){
-            p[q$ix[i]] = q$x[i]
+        for(j in 1:n){
+            p[q$ix[j]] = q$x[j]
         } ## END FOR
 
         noms[i,]=p
