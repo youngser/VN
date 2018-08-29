@@ -14,7 +14,7 @@ nbd of \eqn{G_2} around the corresponding seeds.
 Then, matches these induced subgraphs via \code{multiStart}.}
 \usage{
 vnsgm(x, seeds, g1, g2, h, ell, R, g, pad = 0, sim = FALSE, verb = FALSE,
-  protF = FALSE)
+  plotF = FALSE)
 }
 \arguments{
 \item{x}{vector of indices for vertices of interest (voi) in \eqn{G_1}}
@@ -42,9 +42,9 @@ the indices for the corresponding matches in \eqn{G_2})}
 
 \item{verb}{verbose outputs}
 
-\item{S}{vector of a set of seeds}
-
 \item{plotF}{boolean to plot the probability matrix}
+
+\item{S}{vector of a set of seeds}
 }
 \value{
 \code{seed} \code{s} seeds

@@ -42,7 +42,7 @@
 
 
 # Matches Graphs given a seeding of vertex correspondences
-vnsgm <- function(x,seeds,g1,g2,h,ell,R,g,pad=0,sim=FALSE,verb=FALSE,protF=FALSE) {
+vnsgm <- function(x,seeds,g1,g2,h,ell,R,g,pad=0,sim=FALSE,verb=FALSE,plotF=FALSE) {
     A <- as.matrix(get.adjacency(g1))
     B <- as.matrix(get.adjacency(g2))
     nv1<-nrow(A)
