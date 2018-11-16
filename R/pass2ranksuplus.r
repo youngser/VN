@@ -4,7 +4,7 @@
 #'  greatest to least. ties broken by averaging.
 #'
 #' @param M A matrix that we wish to pass to ranks on.
-#' @return ranked matrix
+#' @return ranked matrix (by row)
 #'
 #' @author Heather Gaddy Patsolic <hgaddy1@jhu.edu>
 #' @export
@@ -30,7 +30,8 @@ pass2ranks <- function(Pst){
 #'  greatest to least. ties broken by averaging.
 #'
 #' @param M A matrix that we wish to pass to ranks on.
-#' @return ranked matrix and unique entries sorted
+#' @return ranked matrix (element-wise with rank 1 as smallest number in
+#' matrix) and unique entries sorted
 #'
 #' @author Heather Gaddy Patsolic <hgaddy1@jhu.edu>
 #' @export

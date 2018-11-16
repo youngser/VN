@@ -6,7 +6,8 @@
 #' @param A adjacency matrix for \eqn{G_1}
 #' @param B adjacency for correlated matrix \eqn{G_2}
 #' @param R number of restarts
-#' @param s number of seeds
+#' @param s number of seeds; assumed to be first \eqn{s} vertices in both
+#' \eqn{G_1} and \eqn{G_2}
 #' @param g gamma (upper bound on alpha) should be in (0,1), max tolerance for alpha, how far away from the barycenter user is willing to go for
 #' the initialization of \code{sgm} on any given iteration
 #' @param pad a scalar value for padding for sgm
