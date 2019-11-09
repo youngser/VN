@@ -11,7 +11,7 @@
 #'
 #' @aliases localnbd
 #' @param x vector of indices for vertices of interest (voi) in \eqn{G_1}
-#' @param seeds vector of a set of seeds
+#' @param S vector of a set of seeds
 #' @param g1 \eqn{G_1} in \code{igraph} object where voi is known
 #' @param g2 \eqn{G_2} in \code{igraph}
 #' @param h \eqn{h}-hop for distance from voi to other vertices
@@ -22,8 +22,8 @@
 #' @param g gamma to be used with \code{multiStart}, max tolerance for alpha, how far away from the barycenter user is willing to go for
 #' the initialization of \code{sgm} on any given iteration
 #' @param pad a scalar value for padding for sgm
-#' @param sim boolean: default FALSE (no, this is not a simulation) --
-#' if TRUE, assumes x = x' (i.e. indices for VOI in \eqn{G_1} are the same as
+#' @param sim boolean: default TRUE (yes, this is a simulation) --
+#' assumes x = x' (i.e. indices for VOI in \eqn{G_1} are the same as
 #' the indices for the corresponding matches in \eqn{G_2})
 #' @param verb verbose outputs
 #' @param plotF boolean to plot the probability matrix
@@ -65,17 +65,7 @@ vnsgm <- function(x,seeds,g1,g2,h,ell,R,g,pad=0,sim=FALSE,verb=FALSE,plotF=FALSE
     voi <- (nrow(seeds)+1):(nrow(seeds)+length(x))
 
     P <- vnsgm.ordered(voi,S,ga,gb,h,ell,R,g,pad,sim,verb,plotF)
-    P1 <- P
-    P1$x   <- x
-    P1$S   <- seeds
-    P1$Sx  <- seeds[P$Sx,1] 
-    P1$Sxp <- seeds[P$Sxp,2] 
-    P1$Cxp <- vec2[P$Cxp]
-    lb2 <- vec[P$labelsGx]
-    names(lb2) <- NULL
-    P1$labelsGx  <- lb2
-    P1$labelsGxp <- vec2[P$labelsGxp]
-    return(P1)
+    return(P)
 }
 
 
