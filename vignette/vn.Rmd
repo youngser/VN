@@ -23,8 +23,10 @@ output:
     toc_float: no
 vignette: >
   \VignetteIndexEntry{Vignette Title}
-  \VignetteEngine{knitr::rmarkdown}
   \VignetteEncoding{UTF-8}
+  \VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
 ---
 
 <style type="text/css">
@@ -253,15 +255,16 @@ if (sim) {
 
 ```{r seed}
 # Randomly select x and S from W, the shared vertices
-(x <- sample(W,1))
+#NB: Somehow, I cannot reproduce the previous demo in the vignette, so I hard coded!
+(x <- 22) #sample(W,1))
 W <- setdiff(W,x) # exclude x from W
 maxseed <- min(length(W),s)
-(S <- sort(sample(W,maxseed))) 
+(S <- c(1,8,18,25)) #sort(sample(W,maxseed))) 
 ```
 
 ```{r sgm,echo=TRUE,eval=TRUE, w=5,h=5,fig.cap=paste("A submatrix of a probability matrix output from SGM. Rows correspond to vertices in $V(G_x)$ and columns correspond to vertices in $V(G\'_x)$. The first ",length(NBDS$Sx)," rows and columns correspond to the seeds $(S_x,S\'_x)$, The next row is $x$. The shaded area (in pink) depicts matching probabilities of vertices in $C\'_x$ against $x$ in $V(G_x)$. The vertices with the highest probability among these _candidates_ is nominated as our best guess for $x\'$.")}
 # Determine Sx and C'x, then do SGM
-NBDS <- vnsgm(x,S,g1,g2,h,ell,R,gamma,plotF=TRUE)
+NBDS <- vnsgm.ordered(x,S,g1,g2,h,ell,R,gamma,plotF=TRUE)
 str(NBDS)
 ```
 ```{r probmat,echo=FALSE,eval=FALSE, w=5,h=5,fig.cap=paste("A probability matrix from `SGM`. Rows are $V(G)$ and columns are $V(G\')$. The first ",length(NBDS$Sx)," rows and columns are seeds ($S_x$), The next row is $x$. The shaded area (in pink) depicts matching probabilities of $G\'$ vertices against $x$ in $G$. The one with the highest probability among these _candidates_ becomes the potential $x\'$ we seek.")}
@@ -382,8 +385,8 @@ NB: In the tables and plots below,
 
 
 ```{r load,echo=FALSE}
-load("~/Dropbox/SGM/nbdmaking/MC-RDPG-rho0.1-seed1-N1-new2.Rbin"); MC1 <- MC
-load("~/Dropbox/SGM/nbdmaking/MC-RDPG-rho0.9-seed1-N1-new2.Rbin"); MC9 <- MC
+load(url("http://www.cis.jhu.edu/~parky/vn/VNDATA/MC-RDPG-rho0.1-seed1-N1-new2.Rbin")); MC1 <- MC
+load(url("http://www.cis.jhu.edu/~parky/vn/VNDATA/MC-RDPG-rho0.9-seed1-N1-new2.Rbin")); MC9 <- MC
 case1 <- (sapply(MC1,"[",1))
 case9 <- (sapply(MC9,"[",1))
 seed1 <- paste0("s",sapply(MC1,"[",2)); seed1[case1!="possible"] <- "s0"
@@ -507,7 +510,7 @@ Since we are choosing the VOI and seeds to be in the core vertex sets, the VOI w
 
 ```{r data, echo=FALSE}
 s <- 12
-load(paste0("~/Dropbox/SGM/nbdmaking/MC-new2-HS-full-s",s,".Rbin"))
+load(url(paste0("http://www.cis.jhu.edu/~parky/vn/VNDATA/MC-new2-HS-full-s",s,".Rbin")))
 case2 <- (sapply(MC,"[",1))
 seed2 <- paste0("s",sprintf("%02d",as.numeric(sapply(MC,"[",2)))); seed2[case2!="possible"] <- "s0"
 ncandidate2 <- as.numeric(sapply(MC,"[",3))
@@ -568,7 +571,7 @@ We do the same experiment as above using only the core graphs. We randomly selec
 
 
 ```{r cdata, echo=FALSE}
-load(paste0("~/Dropbox/SGM/nbdmaking/MC-new-pval-HS-core-s",s,".Rbin"))
+load(url(paste0("http://www.cis.jhu.edu/~parky/vn/VNDATA/MC-new-pval-HS-core-s",s,".Rbin")))
 case3 <- (sapply(MC,"[",1))
 seed3 <- paste0("s",sapply(MC,"[",2)); seed3[case3!="possible"] <- "s0"
 ncandidate3 <- as.numeric(sapply(MC,"[",3))

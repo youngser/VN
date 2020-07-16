@@ -1,34 +1,47 @@
-\documentclass[]{article}
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
 \usepackage{lmodern}
 \usepackage{amssymb,amsmath}
 \usepackage{ifxetex,ifluatex}
-\usepackage{fixltx2e} % provides \textsubscript
 \ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
   \usepackage[T1]{fontenc}
   \usepackage[utf8]{inputenc}
-\else % if luatex or xelatex
-  \ifxetex
-    \usepackage{mathspec}
-  \else
-    \usepackage{fontspec}
-  \fi
-  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
 \fi
-% use upquote if available, for straight quotes in verbatim environments
+% Use upquote if available, for straight quotes in verbatim environments
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
-% use microtype if available
-\IfFileExists{microtype.sty}{%
-\usepackage{microtype}
-\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
 }{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdftitle={Vertex Nomination via Seeded Graph Matching},
+  pdfauthor={Carey E. Priebe, Youngser Park, Heather Patsolic, Vince Lyzinski   Johns Hopkins University},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
 \usepackage[margin=1in]{geometry}
-\usepackage{hyperref}
-\hypersetup{unicode=true,
-            pdftitle={Vertex Nomination via Seeded Graph Matching},
-            pdfauthor={Carey E. Priebe, Youngser Park, Heather Patsolic, Vince Lyzinski   Johns Hopkins University},
-            pdfborder={0 0 0},
-            breaklinks=true}
-\urlstyle{same}  % don't use monospace font for urls
 \usepackage{color}
 \usepackage{fancyvrb}
 \newcommand{\VerbBar}{|}
@@ -38,38 +51,46 @@
 \usepackage{framed}
 \definecolor{shadecolor}{RGB}{248,248,248}
 \newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
-\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
 \newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
 \newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
-\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
-\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
-\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
-\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
-\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
-\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
-\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
-\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
-\newcommand{\ImportTok}[1]{#1}
-\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
 \newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
-\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
-\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
-\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
-\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
-\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
-\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
-\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
-\newcommand{\BuiltInTok}[1]{#1}
-\newcommand{\ExtensionTok}[1]{#1}
-\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
-\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
-\newcommand{\RegionMarkerTok}[1]{#1}
-\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
-\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
-\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
 \newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
 \newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
 \usepackage{longtable,booktabs}
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
 \usepackage{graphicx,grffile}
 \makeatletter
 \def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
@@ -79,60 +100,28 @@
 % margins by default, and it is still possible to overwrite the defaults
 % using explicit options in \includegraphics[width, height, ...]{}
 \setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
 \usepackage[normalem]{ulem}
-% avoid problems with \sout in headers with hyperref:
+% Avoid problems with \sout in headers with hyperref
 \pdfstringdefDisableCommands{\renewcommand{\sout}{}}
-\IfFileExists{parskip.sty}{%
-\usepackage{parskip}
-}{% else
-\setlength{\parindent}{0pt}
-\setlength{\parskip}{6pt plus 2pt minus 1pt}
-}
-\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\setlength{\emergencystretch}{3em} % prevent overfull lines
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
 \setcounter{secnumdepth}{5}
-% Redefines (sub)paragraphs to behave more like sections
-\ifx\paragraph\undefined\else
-\let\oldparagraph\paragraph
-\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
-\fi
-\ifx\subparagraph\undefined\else
-\let\oldsubparagraph\subparagraph
-\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
-\fi
 
-%%% Use protect on footnotes to avoid problems with footnotes in titles
-\let\rmarkdownfootnote\footnote%
-\def\footnote{\protect\rmarkdownfootnote}
-
-%%% Change title format to be more compact
-\usepackage{titling}
-
-% Create subtitle command for use in maketitle
-\newcommand{\subtitle}[1]{
-  \posttitle{
-    \begin{center}\large#1\end{center}
-    }
-}
-
-\setlength{\droptitle}{-2em}
-  \title{Vertex Nomination via Seeded Graph Matching}
-  \pretitle{\vspace{\droptitle}\centering\huge}
-  \posttitle{\par}
-  \author{Carey E. Priebe, Youngser Park, Heather Patsolic, Vince Lyzinski Johns
+\title{Vertex Nomination via Seeded Graph Matching}
+\author{Carey E. Priebe, Youngser Park, Heather Patsolic, Vince Lyzinski Johns
 Hopkins University}
-  \preauthor{\centering\large\emph}
-  \postauthor{\par}
-  \predate{\centering\large\emph}
-  \postdate{\par}
-  \date{2017-09-17}
-
+\date{2020-07-16}
 
 \begin{document}
 \maketitle
 
-\section{Background}\label{background}
+\hypertarget{background}{%
+\section{Background}\label{background}}
 
 \begin{itemize}
 \tightlist
@@ -165,7 +154,8 @@ it's a real problem, with given VOI \(x\) and some seeds
 \(S \leftrightarrow S'\), then embark immediately on our procedure
 described below.
 
-\section{Toy Example}\label{toy-example}
+\hypertarget{toy-example}{%
+\section{Toy Example}\label{toy-example}}
 
 \begin{quote}
 \textbf{input}: \(G\), \(G'\), seedset \(S\leftrightarrow S'\) (pairs of
@@ -270,7 +260,8 @@ real application.
 \begin{Shaded}
 \begin{Highlighting}[]
 \CommentTok{# Randomly select x and S from W, the shared vertices}
-\NormalTok{(x <-}\StringTok{ }\KeywordTok{sample}\NormalTok{(W,}\DecValTok{1}\NormalTok{))}
+\CommentTok{#NB: Somehow, I cannot reproduce the previous demo in the vignette, so I hard coded!}
+\NormalTok{(x <-}\StringTok{ }\DecValTok{22}\NormalTok{) }\CommentTok{#sample(W,1))}
 \end{Highlighting}
 \end{Shaded}
 
@@ -282,7 +273,7 @@ real application.
 \begin{Highlighting}[]
 \NormalTok{W <-}\StringTok{ }\KeywordTok{setdiff}\NormalTok{(W,x) }\CommentTok{# exclude x from W}
 \NormalTok{maxseed <-}\StringTok{ }\KeywordTok{min}\NormalTok{(}\KeywordTok{length}\NormalTok{(W),s)}
-\NormalTok{(S <-}\StringTok{ }\KeywordTok{sort}\NormalTok{(}\KeywordTok{sample}\NormalTok{(W,maxseed))) }
+\NormalTok{(S <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{,}\DecValTok{8}\NormalTok{,}\DecValTok{18}\NormalTok{,}\DecValTok{25}\NormalTok{)) }\CommentTok{#sort(sample(W,maxseed))) }
 \end{Highlighting}
 \end{Shaded}
 
@@ -293,7 +284,7 @@ real application.
 \begin{Shaded}
 \begin{Highlighting}[]
 \CommentTok{# Determine Sx and C'x, then do SGM}
-\NormalTok{NBDS <-}\StringTok{ }\KeywordTok{vnsgm}\NormalTok{(x,S,g1,g2,h,ell,R,gamma,}\DataTypeTok{plotF=}\OtherTok{TRUE}\NormalTok{)}
+\NormalTok{NBDS <-}\StringTok{ }\KeywordTok{vnsgm.ordered}\NormalTok{(x,S,g1,g2,h,ell,R,gamma,}\DataTypeTok{plotF=}\OtherTok{TRUE}\NormalTok{)}
 \end{Highlighting}
 \end{Shaded}
 
@@ -318,13 +309,13 @@ matching probabilities of vertices in \(C'_x\) against \(x\) in
 \begin{verbatim}
 # List of 9
 #  $ case     : chr "possible"
-#  $ x        : int 22
-#  $ S        : int [1:4] 1 8 18 25
-#  $ Sx       : int [1:2] 18 25
-#  $ Sxp      : int [1:2] 18 25
+#  $ x        : num 22
+#  $ S        : num [1:4] 1 8 18 25
+#  $ Sx       : num [1:2] 18 25
+#  $ Sxp      : num [1:2] 18 25
 #  $ Cxp      : int [1:10] 1 4 5 6 9 10 11 14 15 22
-#  $ labelsGx : int [1:10] 18 25 22 6 11 13 14 15 23 27
-#  $ labelsGxp: int [1:12] 18 25 22 1 4 5 6 9 10 11 ...
+#  $ labelsGx : num [1:10] 18 25 22 6 11 13 14 15 23 27
+#  $ labelsGxp: num [1:12] 18 25 22 1 4 5 6 9 10 11 ...
 #  $ P        : num [1:12, 1:12] 1 0 0 0 0 0 0 0 0 0 ...
 \end{verbatim}
 
@@ -367,7 +358,7 @@ V1 & V4 & V5 & V6 & V9 & V10 & V11 & V14 & V15 & V22\tabularnewline
 V1 & V4 & V5 & V6 & V9 & V10 & V11 & V14 & V15 & V22\tabularnewline
 \midrule
 \endhead
-5 & 7 & 9 & 2 & 9 & 6 & 4 & 9 & 3 & 1\tabularnewline
+7.5 & 5.5 & 5.5 & 2 & 9.5 & 7.5 & 4 & 9.5 & 3 & 1\tabularnewline
 \bottomrule
 \end{longtable}
 
@@ -383,7 +374,8 @@ first ring, their first neighbors are in the next ring, and the rest are
 placed in the outmost ring.}
 \end{figure}
 
-\section{Simulation}\label{simulation}
+\hypertarget{simulation}{%
+\section{Simulation}\label{simulation}}
 
 We repeat the above 1000 times by generating new graphs each time, as
 well as new \(x\) and \(S\).
@@ -449,13 +441,15 @@ possible & s4 & 9 & 15.8 & 0.00\tabularnewline
 \bottomrule
 \end{longtable}
 
-\subsection{Number of candidates?}\label{number-of-candidates}
+\hypertarget{number-of-candidates}{%
+\subsection{Number of candidates?}\label{number-of-candidates}}
 
 \includegraphics{vn_files/figure-latex/cand-1.png}
 \includegraphics{vn_files/figure-latex/ncand-1.png}
 
+\hypertarget{rank-of-x}{%
 \subsection{\texorpdfstring{Rank of
-\(x'\)?}{Rank of x'?}}\label{rank-of-x}
+\(x'\)?}{Rank of x'?}}\label{rank-of-x}}
 
 \begin{figure}
 \centering
@@ -471,7 +465,8 @@ the number of seeds \(s_x\).}
 the number of candidates and the number of seeds.}
 \end{figure}
 
-\section{Real Data}\label{real-data}
+\hypertarget{real-data}{%
+\section{Real Data}\label{real-data}}
 
 \begin{quote}
 R. Mastrandrea, J. Fournet, and A. Barrat, \emph{Contact patterns in a
@@ -490,7 +485,8 @@ networks for which we know the bijection between the two vertex sets,
 and it is known that no such bijection exists among the remaining
 vertices.
 
-\subsection{Full Graphs}\label{full-graphs}
+\hypertarget{full-graphs}{%
+\subsection{Full Graphs}\label{full-graphs}}
 
 First, we do the same experiment as above using the full graphs. We
 randomly select the VOI \(x\) and seeds \(S\) from the shared vertices
@@ -524,7 +520,8 @@ possible & s09 & 1 & 33.0 & 0.50\tabularnewline
 \bottomrule
 \end{longtable}
 
-\subsubsection{Number of candidates?}\label{number-of-candidates-1}
+\hypertarget{number-of-candidates-1}{%
+\subsubsection{Number of candidates?}\label{number-of-candidates-1}}
 
 \begin{figure}
 \centering
@@ -533,13 +530,15 @@ possible & s09 & 1 & 33.0 & 0.50\tabularnewline
 number of seeds.}
 \end{figure}
 
+\hypertarget{rank-of-x-1}{%
 \subsubsection{\texorpdfstring{Rank of
-\(x'\)?}{Rank of x'?}}\label{rank-of-x-1}
+\(x'\)?}{Rank of x'?}}\label{rank-of-x-1}}
 
 \includegraphics{vn_files/figure-latex/rank3-1.png}
 \includegraphics{vn_files/figure-latex/rank4-1.png}
 
-\subsection{Core Graphs}\label{core-graphs}
+\hypertarget{core-graphs}{%
+\subsection{Core Graphs}\label{core-graphs}}
 
 We do the same experiment as above using only the core graphs. We
 randomly select the VOI \(x\) and seeds \(S\) from the shared vertices
@@ -548,13 +547,13 @@ randomly select the VOI \(x\) and seeds \(S\) from the shared vertices
 \begin{longtable}[]{@{}llrrrrr@{}}
 \caption{A summary statistics using the core graphs}\tabularnewline
 \toprule
-case & seed & count & mean.ncand & mean.nrank & \#pvals\textless{}0.05 &
-mean(nrank{[}pval\textless{}0.05{]})\tabularnewline
+case & seed & count & mean.ncand & mean.nrank & \#pvals\textless0.05 &
+mean(nrank{[}pval\textless0.05{]})\tabularnewline
 \midrule
 \endfirsthead
 \toprule
-case & seed & count & mean.ncand & mean.nrank & \#pvals\textless{}0.05 &
-mean(nrank{[}pval\textless{}0.05{]})\tabularnewline
+case & seed & count & mean.ncand & mean.nrank & \#pvals\textless0.05 &
+mean(nrank{[}pval\textless0.05{]})\tabularnewline
 \midrule
 \endhead
 impossible1 & s0 & 207 & 0.0 & NaN & 0 & NaN\tabularnewline
@@ -577,7 +576,8 @@ possible & s8 & 1 & 21.0 & 0.50 & 1 & 0.50\tabularnewline
 seeds.}
 \end{figure}
 
-\subsubsection{Number of candidates?}\label{number-of-candidates-2}
+\hypertarget{number-of-candidates-2}{%
+\subsubsection{Number of candidates?}\label{number-of-candidates-2}}
 
 \begin{figure}
 \centering
@@ -586,11 +586,11 @@ seeds.}
 number of seeds.}
 \end{figure}
 
+\hypertarget{rank-of-x-2}{%
 \subsubsection{\texorpdfstring{Rank of
-\(x'\)?}{Rank of x'?}}\label{rank-of-x-2}
+\(x'\)?}{Rank of x'?}}\label{rank-of-x-2}}
 
 \includegraphics{vn_files/figure-latex/crank3-1.png}
 \includegraphics{vn_files/figure-latex/crank4-1.png}
-
 
 \end{document}

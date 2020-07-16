@@ -68,8 +68,8 @@ vnsgm <- function(x,seeds,g1,g2,h,ell,R,g,pad=0,sim=FALSE,verb=FALSE,plotF=FALSE
     P1 <- P
     P1$x   <- x
     P1$S   <- seeds
-    P1$Sx  <- seeds[P$Sx,1] 
-    P1$Sxp <- seeds[P$Sxp,2] 
+    P1$Sx  <- seeds[P$Sx,1]
+    P1$Sxp <- seeds[P$Sxp,2]
     P1$Cxp <- vec2[P$Cxp]
     lb2 <- vec[P$labelsGx]
     names(lb2) <- NULL

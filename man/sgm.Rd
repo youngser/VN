@@ -4,8 +4,7 @@
 \alias{sgm}
 \title{Matches Graphs given a seeding of vertex correspondences}
 \usage{
-sgm(A, B, seeds, hard = TRUE, pad = 0, start = "barycenter",
-  maxiter = 20)
+sgm(A, B, seeds, hard = TRUE, pad = 0, start = "barycenter", maxiter = 20)
 }
 \arguments{
 \item{A}{a numeric matrix, the adjacency matrix of the first graph}
